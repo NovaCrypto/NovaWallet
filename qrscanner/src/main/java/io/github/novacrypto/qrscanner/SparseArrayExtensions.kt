@@ -19,4 +19,18 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner'
+package io.github.novacrypto.qrscanner
+
+import android.util.SparseArray
+
+internal fun <E> SparseArray<E>.toIterable(): Iterable<E> =
+        object : Iterable<E> {
+            override fun iterator() =
+                    object : Iterator<E> {
+                        private var i = 0
+
+                        override fun hasNext() = i < this@toIterable.size()
+
+                        override fun next(): E = this@toIterable.valueAt(i++)
+                    }
+        }

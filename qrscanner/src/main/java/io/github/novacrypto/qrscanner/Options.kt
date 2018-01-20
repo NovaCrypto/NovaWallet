@@ -19,4 +19,6 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner'
+package io.github.novacrypto.qrscanner
+
+internal class Options(val showBarcodeBounds: Boolean)
