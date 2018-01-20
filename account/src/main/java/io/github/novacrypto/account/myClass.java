@@ -19,4 +19,7 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account'
+package io.github.novacrypto.account;
+
+public class myClass {
+}

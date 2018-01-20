@@ -19,4 +19,15 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account'
+package io.github.novacrypto;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+public class MyTest {
+
+    @Test
+    public void a() {
+        assertEquals(1, 1);
+    }
+}
