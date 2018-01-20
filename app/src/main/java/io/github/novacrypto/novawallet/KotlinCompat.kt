@@ -19,28 +19,11 @@
  *  You can contact the authors via github issues.
  */
 
-package io.github.novacrypto.qrscanner
+package io.github.novacrypto.novawallet
 
-import android.graphics.Point
-import android.graphics.Rect
-import com.google.android.gms.common.images.Size
+import android.content.res.Resources
+import android.support.annotation.ColorRes
+import android.support.v4.content.res.ResourcesCompat
 
-internal fun Size.orientationDifferent(width: Int, height: Int) =
-        (this.width > this.height) xor (width > height)
-
-internal fun Size.swap() = Size(this.height, this.width)
-
-internal fun Size.swapIfOrientationDifferent(width: Int, height: Int) =
-        if (this.orientationDifferent(width, height)) {
-            this.swap()
-        } else {
-            this
-        }
-
-internal infix fun Point.distanceSquared(rect: Rect): Int {
-    val dx = this.x - rect.centerX()
-    val dy = this.y - rect.centerY()
-    return dx * dx + dy * dy
-}
-
-internal infix fun Point.isInside(rect: Rect) = rect.contains(this.x, this.y)
+fun Resources.getColorCompat(@ColorRes color: Int, theme: Resources.Theme? = null) =
+        ResourcesCompat.getColor(this, color, theme)

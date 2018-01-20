@@ -21,20 +21,19 @@
 
 package io.github.novacrypto.qrscanner
 
-import com.google.android.gms.common.images.Size
+import android.graphics.Point
 import com.google.android.gms.vision.Detector
 import com.google.android.gms.vision.barcode.Barcode
 
 internal class ClosestToCentreDetector(
         private val onNewBarcode: (Barcode) -> Unit,
-        private val onNoBarcodeVisible: () -> Unit,
-        private val getCentre: () -> Size
+        private val onNoBarcodeVisible: () -> Unit
 ) : Detector.Processor<Barcode> {
 
     private val barcodes = HashMap<String, BarcodeDetail>()
     private val old = mutableListOf<String>()
 
-    inner class BarcodeDetail(val barcode: Barcode, val time: Long)
+    inner class BarcodeDetail(val barcode: Barcode, val expireTime: Long)
 
     override fun release() {
         barcodes.clear()
@@ -45,9 +44,9 @@ internal class ClosestToCentreDetector(
 
         addNewlyDetectedBarcodes(detections, time)
 
-        val closest: Barcode? = findTheClosestNonExpiredBarcodeToCentre(time)
-
-        removeOldBarcodes()
+        val closest: Barcode? = findTheClosestNonExpiredBarcodeToCentre(time,
+                Point(detections.frameMetadata.width / 2,
+                        detections.frameMetadata.height / 2))
 
         if (closest != null) {
             onNewBarcode(closest)
@@ -59,34 +58,27 @@ internal class ClosestToCentreDetector(
     private fun addNewlyDetectedBarcodes(detections: Detector.Detections<Barcode>, time: Long) {
         if (detections.detectedItems.size() > 0) {
             for (barcode in detections.detectedItems.toIterable()) {
-                barcodes[barcode.displayValue] = BarcodeDetail(barcode, time)
+                barcodes[barcode.displayValue] = BarcodeDetail(barcode, time + 1000)
             }
         }
     }
 
-    private fun findTheClosestNonExpiredBarcodeToCentre(time: Long): Barcode? {
-        val centre = getCentre()
+    private fun findTheClosestNonExpiredBarcodeToCentre(time: Long, centre: Point): Barcode? {
         var closest: Barcode? = null
         var minD2: Int = Int.MAX_VALUE
 
         for (barcodeEntry in barcodes.entries) {
-            if (barcodeEntry.value.time < time - 1000) {
-                old.add(barcodeEntry.key)
-            } else {
-                val d2 = centre distanceSquared barcodeEntry.value.barcode.boundingBox
+            if (barcodeEntry.value.expireTime > time) {
+                val barcode = barcodeEntry.value.barcode
+                val boundingBox = barcode.boundingBox
+                if (centre isInside boundingBox) return barcode
+                val d2 = centre distanceSquared boundingBox
                 if (d2 < minD2) {
                     minD2 = d2
-                    closest = barcodeEntry.value.barcode
+                    closest = barcode
                 }
             }
         }
         return closest
-    }
-
-    private fun removeOldBarcodes() {
-        for (oldBarcode in old) {
-            barcodes.remove(oldBarcode)
-        }
-        old.clear()
     }
 }

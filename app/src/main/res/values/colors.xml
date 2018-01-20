@@ -24,4 +24,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorAccentIcon">#CFCFCF</color>
+
+    <!-- FAB Sheet -->
+    <color name="fab_color">@color/colorAccent</color>
+    <color name="fab_sheet_color">@android:color/white</color>
 </resources>

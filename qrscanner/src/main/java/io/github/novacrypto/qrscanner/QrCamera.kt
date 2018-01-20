@@ -56,12 +56,6 @@ internal class QrCamera(
                 },
                 {
                     cameraSurfaceView.setRenderBarcode(null)
-                },
-                {
-                    cameraSource
-                            .previewSize
-                            .swapIfOrientationDifferent(cameraSurfaceView.width, cameraSurfaceView.height)
-                            .centre()
                 }
         )
         )
