@@ -25,3 +25,21 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+task('installSharedIdea', type: Copy) {
+    description = 'Copy the shared intellij files into local .idea/'
+    from 'ideaShared/'
+    into '.idea/'
+}
+
+task('backupCopyrightIdea', type: Copy) {
+    description = 'Copy the local .idea/copyright to shared intellij files'
+    into 'ideaShared/copyright/'
+    from '.idea/copyright/'
+}
+
+task('setup') {
+    group = 'Setup'
+    description = 'Prepare or update the IDE working directory'
+    dependsOn 'installSharedIdea'
+}
