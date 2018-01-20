@@ -19,52 +19,15 @@
  *  You can contact the authors via github issues.
  */
 
-apply plugin: 'java-library'
-apply plugin: 'kotlin'
+package io.github.novacrypto
 
-apply plugin: 'jacoco'
+import io.github.novacrypto.account.Unused
+import org.junit.Test
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
+class MyKtTest {
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testCompile 'junit:junit:4.12'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-}
-
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
+    @Test
+    fun a() {
+        Unused()
     }
 }
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-
-/** jacoco code-cov **/
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
-check.dependsOn jacocoTestReport
-
-/** end jacoco code-cov **/
