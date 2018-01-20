@@ -29,15 +29,30 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import com.facebook.litho.ComponentContext
+import com.facebook.litho.LithoView
+import com.facebook.litho.sections.SectionContext
+import com.facebook.litho.sections.widget.RecyclerCollectionComponent
 import io.github.novacrypto.base58.Base58.base58Encode
+import io.github.novacrypto.bip32.ExtendedPrivateKey
+import io.github.novacrypto.bip32.ExtendedPublicKey
+import io.github.novacrypto.bip32.Index.isHardened
+import io.github.novacrypto.bip32.Network
+import io.github.novacrypto.bip32.networks.Bitcoin
+import io.github.novacrypto.bip32.networks.Litecoin
+import io.github.novacrypto.bip44.Account
+import io.github.novacrypto.bip44.AddressIndex
+import io.github.novacrypto.bip44.BIP44
 import io.github.novacrypto.mnemonicentry.EnterMnemonicKeypadActivity
 import io.github.novacrypto.novawallet.customscanners.XPubScannerActivity
 import io.github.novacrypto.novawallet.uielements.Fab
 import io.github.novacrypto.novawallet.uielements.MaterialSheetFabAnimator
+import io.github.novacrypto.novawallet.uilitho.ListSection
 import io.github.novacrypto.qrscanner.ScanQrActivity
 import io.github.novacrypto.security.AsymmetricSecurity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_menu_card.*
+import kotlinx.android.synthetic.main.content_main.*
 import timber.log.Timber
 
 private const val REQUEST_SCAN = 1
@@ -51,10 +66,32 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var materialSheetFab: MaterialSheetFabAnimator<Fab>
 
+    private lateinit var context: ComponentContext
+
+    private lateinit var lithoView: LithoView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        context = ComponentContext(this)
+
+        val component =
+                RecyclerCollectionComponent.create(context)
+                        .disablePTR(true)
+                        .section(ListSection.create(SectionContext(context))
+                                .data(listOf(AddressModel(
+                                        coinIcon = R.drawable.ic_coin_litecoin,
+                                        path = "Click the plus",
+                                        address = "")))
+                                .build())
+                        .build()
+
+        lithoView = LithoView.create(context, component)
+
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        main_area.addView(lithoView)
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -66,7 +103,6 @@ class MainActivity : AppCompatActivity() {
                     }
                     .show()
         }
-
 
         val fab = findViewById<Fab>(R.id.fab)
         val sheetView = findViewById<View>(R.id.fab_sheet)
@@ -120,12 +156,94 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_SCAN && resultCode == Activity.RESULT_OK) {
-            Timber.d("Activity got barcode back [%s]", data?.extras?.getString(ScanQrActivity.BARCODE_DATA))
+            val barcode = data?.extras?.getString(ScanQrActivity.BARCODE_DATA) ?: ""
+            Timber.d("Activity got barcode back [%s]", barcode)
+            quickDemo(barcode)
         }
         if (requestCode == REQUEST_MNEMONIC && resultCode == Activity.RESULT_OK) {
             val encoded = data?.extras?.getString(EnterMnemonicKeypadActivity.RESULT_XPRV)!!
             Timber.d("Activity got xprv back encoded [%s]", encoded)
-            Timber.d("Activity got xprv back [%s]", base58Encode(security.decoder().decodeByteArray(encoded)))
+            val xprv = security.decoder().decodeByteArray(encoded)
+            Timber.d("Activity got xprv back [%s]", base58Encode(xprv))
+            quickDemo(xprv)
         }
     }
+
+    private var accounts = listOf<AddressModel>()
+
+    private fun quickDemo(rootXrpv: ByteArray) {
+        val deriver = ExtendedPrivateKey
+                .deserializer()
+                .deserialize(rootXrpv)
+                .deriveWithCache()
+        listOf<Network>(Bitcoin.MAIN_NET, Bitcoin.TEST_NET, Litecoin.MAIN_NET)
+                .map {
+                    deriver.derive(BIP44.m()
+                            .purpose44()
+                            .coinType(networkToBip44Coin(it))
+                            .account(0), Account.DERIVATION)
+                            .neuter()
+                            .toNetwork(it)
+                            .extendedBase58()
+                }
+                .forEach { quickDemo(it) }
+    }
+
+    private fun quickDemo(barcode: String) {
+        try {
+            val public = ExtendedPublicKey.deserializer().deserialize(barcode)
+            if (public.depth() == 4) {
+                throw Exception("depth must be 4")
+            }
+            if (!isHardened(public.childNumber())) {
+                throw Exception("Account number not hardened")
+            }
+            val deriver = public.deriveWithCache()
+            val external = BIP44
+                    .m()
+                    .purpose44()
+                    .coinType(networkToBip44Coin(public.network()))
+                    .account((public.childNumber() - 0x80000000).toInt())
+                    .external()
+            for (i in 0..19) {
+                val addressIndex = external
+                        .address(i)
+                accounts += AddressModel(
+                        coinIcon = coinRes(public.network()),
+                        path = addressIndex.toString(),
+                        address = deriver
+                                .derive(addressIndex, AddressIndex.DERIVATION_FROM_ACCOUNT)
+                                .p2pkhAddress())
+            }
+        } catch (e: Exception) {
+            accounts += AddressModel(
+                    coinIcon = R.drawable.ic_error_outline_black,
+                    path = "Error",
+                    address = e.message.toString())
+            Timber.e(e)
+        }
+        val component =
+                RecyclerCollectionComponent.create(context)
+                        .disablePTR(true)
+                        .section(ListSection.create(SectionContext(context))
+                                .data(accounts).build())
+                        .build()
+        lithoView.setComponent(component)
+    }
+
+    private fun coinRes(network: Network?) =
+            when (network) {
+                Bitcoin.MAIN_NET -> R.drawable.ic_coin_bitcoin
+                Bitcoin.TEST_NET -> R.drawable.ic_coin_bitcoin_testnet
+                Litecoin.MAIN_NET -> R.drawable.ic_coin_litecoin
+                else -> throw Exception("Unknown network")
+            }
+
+    private fun networkToBip44Coin(network: Network) =
+            when (network) {
+                Bitcoin.MAIN_NET -> 0
+                Bitcoin.TEST_NET -> 1
+                Litecoin.MAIN_NET -> 2
+                else -> throw Exception("Unknown network")
+            }
 }

@@ -19,4 +19,12 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner', ':bips', ':mnemonicentry', ':security', ':lithokotlin'
+package io.github.novacrypto.novawallet
+
+import android.support.annotation.DrawableRes
+
+class AddressModel(
+        @DrawableRes val coinIcon: Int,
+        val path: String,
+        val address: String
+)

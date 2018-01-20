@@ -22,6 +22,7 @@
 package io.github.novacrypto.novawallet
 
 import android.app.Application
+import com.facebook.soloader.SoLoader
 import timber.log.Timber
 
 class WalletApplication : Application() {
@@ -33,6 +34,8 @@ class WalletApplication : Application() {
                 BuildConfig.APPLICATION_ID,
                 BuildConfig.VERSION_NAME,
                 BuildConfig.VERSION_CODE)
+
+        SoLoader.init(this, false)
     }
 
     private fun plantTimberTrees() {
