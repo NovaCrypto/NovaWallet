@@ -47,6 +47,8 @@ android {
 
 dependencies {
     implementation project(':qrscanner')
+    implementation project(':bips')
+
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:cardview-v7:26.1.0'

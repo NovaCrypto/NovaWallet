@@ -29,7 +29,7 @@ import kotlinx.android.synthetic.main.activity_scan_qr.*
 import kotlinx.android.synthetic.main.content_scan_qr.*
 import timber.log.Timber
 
-class ScanQrActivity : AppCompatActivity() {
+open class ScanQrActivity : AppCompatActivity() {
 
     companion object {
         const val OPTION_SHOW_BARCODE_BOX = "SHOW_BARCODE_BOX"
@@ -52,7 +52,12 @@ class ScanQrActivity : AppCompatActivity() {
                                 putExtra(BARCODE_DATA, barcode)
                             })
                     finish()
-                })
+                },
+                getBarcodeFilter())
+    }
+
+    protected open fun getBarcodeFilter(): (CharSequence) -> Boolean {
+        return { _ -> true }
     }
 
     override fun onResume() {

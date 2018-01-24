@@ -19,4 +19,11 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner', ':bips'
+package io.github.novacrypto.novawallet.customscanners
+
+import io.github.novacrypto.bips.isValidXPub
+import io.github.novacrypto.qrscanner.ScanQrActivity
+
+class XPubScannerActivity : ScanQrActivity() {
+    override fun getBarcodeFilter() = CharSequence::isValidXPub
+}
