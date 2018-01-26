@@ -19,4 +19,21 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner', ':bips', ':mnemonicentry'
+package io.github.novacrypto.mnemonicentry
+
+import android.os.Bundle
+import android.support.v4.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+
+/**
+ * A placeholder fragment containing a simple view.
+ */
+class EnterMnemonicFragment : Fragment() {
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_enter_mnemonic, container, false)
+    }
+}

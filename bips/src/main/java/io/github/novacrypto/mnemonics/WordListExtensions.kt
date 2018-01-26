@@ -19,4 +19,14 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner', ':bips', ':mnemonicentry'
+package io.github.novacrypto.mnemonics
+
+import io.github.novacrypto.bip39.WordList
+
+internal fun WordList.toIterable() = object : Iterable<String> {
+    override fun iterator() = object : Iterator<String> {
+        var i = 0
+        override fun hasNext() = i < 2048
+        override fun next() = this@toIterable.getWord(i++)
+    }
+}
