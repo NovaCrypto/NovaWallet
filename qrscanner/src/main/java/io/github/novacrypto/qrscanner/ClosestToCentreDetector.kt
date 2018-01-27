@@ -27,11 +27,11 @@ import com.google.android.gms.vision.barcode.Barcode
 
 internal class ClosestToCentreDetector(
         private val onNewBarcode: (Barcode) -> Unit,
-        private val onNoBarcodeVisible: () -> Unit
+        private val onNoBarcodeVisible: () -> Unit,
+        private val filter: (String) -> Boolean
 ) : Detector.Processor<Barcode> {
 
     private val barcodes = HashMap<String, BarcodeDetail>()
-    private val old = mutableListOf<String>()
 
     inner class BarcodeDetail(val barcode: Barcode, val expireTime: Long)
 
@@ -70,6 +70,9 @@ internal class ClosestToCentreDetector(
         for (barcodeEntry in barcodes.entries) {
             if (barcodeEntry.value.expireTime > time) {
                 val barcode = barcodeEntry.value.barcode
+                if (!filter(barcode.displayValue)) {
+                    continue
+                }
                 val boundingBox = barcode.boundingBox
                 if (centre isInside boundingBox) return barcode
                 val d2 = centre distanceSquared boundingBox

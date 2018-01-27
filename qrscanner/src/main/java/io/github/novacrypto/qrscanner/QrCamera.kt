@@ -35,7 +35,8 @@ import timber.log.Timber
 internal class QrCamera(
         private val cameraSurfaceView: CameraSourcePreview,
         private val options: Options,
-        private val onAccept: (String) -> Unit
+        private val onAccept: (String) -> Unit,
+        filter: (String) -> Boolean
 ) {
 
     private val context = cameraSurfaceView.context.applicationContext
@@ -56,7 +57,8 @@ internal class QrCamera(
                 },
                 {
                     cameraSurfaceView.setRenderBarcode(null)
-                }
+                },
+                filter
         )
         )
     }

@@ -22,7 +22,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.2.10'
+    ext.kotlin_version = '1.2.21'
     repositories {
         google()
         jcenter()
@@ -36,10 +36,26 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.github.ben-manes.versions' version '0.17.0' apply false
+}
+
 allprojects {
     repositories {
         google()
         jcenter()
+    }
+    // Generate a dependency version update report for release
+    // ./gradlew dependencyUpdates -Drevision=release
+    // https://github.com/ben-manes/gradle-versions-plugin
+    apply plugin: 'com.github.ben-manes.versions'
+}
+
+dependencyUpdates {
+    outputFormatter = { result ->
+        if (!result.outdated.dependencies.isEmpty()) {
+            throw new GradleException('Abort, there are dependencies to update.')
+        }
     }
 }
 

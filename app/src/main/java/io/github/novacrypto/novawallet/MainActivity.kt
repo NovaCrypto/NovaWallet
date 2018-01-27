@@ -29,6 +29,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import io.github.novacrypto.novawallet.customscanners.XPubScannerActivity
 import io.github.novacrypto.novawallet.uielements.Fab
 import io.github.novacrypto.novawallet.uielements.MaterialSheetFabAnimator
 import io.github.novacrypto.qrscanner.ScanQrActivity
@@ -94,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         add_account.setOnClickListener { _ ->
             Timber.d("Add account")
             materialSheetFab.hideSheetAndAfter {
-                startActivityForResult(Intent(this, ScanQrActivity::class.java).apply {
+                startActivityForResult(Intent(this, XPubScannerActivity::class.java).apply {
                     putExtra(ScanQrActivity.OPTION_SHOW_BARCODE_BOX, BuildConfig.DEBUG)
                 }, 1)
             }

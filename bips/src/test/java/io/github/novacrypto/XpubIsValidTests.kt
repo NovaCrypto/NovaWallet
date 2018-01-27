@@ -19,4 +19,29 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner', ':bips'
+package io.github.novacrypto
+
+import io.github.novacrypto.bips.isValidXPub
+import org.amshove.kluent.`should be`
+import org.junit.Test
+
+class ValidXpubTests {
+
+    @Test
+    fun `xpub is valid`() {
+        "xpub68UrM5VsVKymX9zLuvi1ZkAfgTLqd8iLuyzEYU8VprQghHVAkH9es3KVfFyLJkCnnJj1prShvK5GF9wQRvDVUXE7ZuDGgVPZ5C6kALWVfjH"
+                .isValidXPub() `should be` true
+    }
+
+    @Test
+    fun `xpub with modified checksum is not valid`() {
+        "xpub68UrM5VsVKymX9zLuvi1ZkAfgTLqd8iLuyzEYU8VprQghHVAkH9es3KVfFyLJkCnnJj1prShvK5GF9wQRvDVUXE7ZuDGgVPZ5C6kALWVfjh"
+                .isValidXPub() `should be` false
+    }
+
+    @Test
+    fun `xprv is not valid`() {
+        "xprv9uVVwZxyexRUJfusouB1CcDw8RWMDfzVYm4dk5itGWshpVA2CjqQKF11oyoML33sZ4YpUwBTu8YNeawsPF3ctX6DuPmjSDt1rqAcUYVptHR"
+                .isValidXPub() `should be` false
+    }
+}

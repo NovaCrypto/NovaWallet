@@ -19,4 +19,14 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner', ':bips'
+package io.github.novacrypto.bips
+
+import io.github.novacrypto.bip32.ExtendedPublicKey
+
+fun CharSequence.isValidXPub() =
+        try {
+            ExtendedPublicKey.deserializer().deserialize(this)
+            true
+        } catch (e: Exception) {
+            false
+        }
