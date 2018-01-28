@@ -73,7 +73,7 @@ internal class NumericTree(val depth: Int = 0) {
 
     fun isAvailable(c: Char) = childNodes.containsKey(c)
 
-    var commonPattern: String = "?a?"
+    var commonPattern = ""
         private set
 }
 

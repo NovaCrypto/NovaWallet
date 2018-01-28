@@ -24,24 +24,6 @@ package io.github.novacrypto.mnemonics
 import io.github.novacrypto.bip39.wordlists.English
 import io.reactivex.Observable
 
-sealed class NumericEntryEvent
-
-class NumericEntryNumberEvent(val number: Int) : NumericEntryEvent()
-class NumericEntryBackspaceEvent : NumericEntryEvent()
-class NumericEntryAcceptEvent(val acceptOption: Int) : NumericEntryEvent()
-
-data class NumericEntryModel(
-        val currentKey: String,
-        val available: Set<Int>,
-        val exactMatches: List<String>,
-        val mnemonic: List<String>,
-        val display: String,
-        val previousState: NumericEntryModel? = null
-) {
-    val isBackSpaceAvailable: Boolean = previousState != null
-    fun isAvailable(buttonNumber: Int) = available.contains(buttonNumber)
-}
-
 class EntryFlow(private val input: Observable<NumericEntryEvent>) {
     private val root: NumericTree = English.INSTANCE.toNumericTree()
 

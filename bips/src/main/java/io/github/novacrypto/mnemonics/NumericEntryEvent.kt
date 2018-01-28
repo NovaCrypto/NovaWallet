@@ -21,14 +21,8 @@
 
 package io.github.novacrypto.mnemonics
 
-import io.github.novacrypto.bip39.WordList
+sealed class NumericEntryEvent
 
-internal fun WordList.toIterable() = object : Iterable<String> {
-    override fun iterator(): Iterator<String> {
-        var i = 0
-        return object : Iterator<String> {
-            override fun hasNext() = i < 2048
-            override fun next() = this@toIterable.getWord(i++)
-        }
-    }
-}
+class NumericEntryNumberEvent(val number: Int) : NumericEntryEvent()
+class NumericEntryBackspaceEvent : NumericEntryEvent()
+class NumericEntryAcceptEvent(val acceptOption: Int) : NumericEntryEvent()
