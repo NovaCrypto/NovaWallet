@@ -209,9 +209,9 @@ private fun keySequence(s: String): Observable<NumericEntryEvent> =
                 .filter { it != ',' }
                 .map {
                     when (it) {
-                        in '2'..'9' -> NumericEntryNumberEvent(it - '0')
-                        in 'a'..'c' -> NumericEntryAcceptEvent(it - 'a')
-                        '<' -> NumericEntryBackspaceEvent()
+                        in '2'..'9' -> NumericEntryEvent.KeyPress(it - '0')
+                        in 'a'..'c' -> NumericEntryEvent.AcceptWord(it - 'a')
+                        '<' -> NumericEntryEvent.Backspace()
                         else -> throw Exception("Test case error, no map for $it")
                     }
                 }

@@ -21,8 +21,8 @@
 
 package io.github.novacrypto.mnemonics
 
-sealed class NumericEntryEvent
-
-class NumericEntryNumberEvent(val number: Int) : NumericEntryEvent()
-class NumericEntryBackspaceEvent : NumericEntryEvent()
-class NumericEntryAcceptEvent(val acceptOption: Int) : NumericEntryEvent()
+sealed class NumericEntryEvent {
+    class KeyPress(val number: Int) : NumericEntryEvent()
+    class Backspace : NumericEntryEvent()
+    class AcceptWord(val acceptOption: Int) : NumericEntryEvent()
+}

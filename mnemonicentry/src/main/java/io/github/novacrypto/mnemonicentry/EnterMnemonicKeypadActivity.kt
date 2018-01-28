@@ -29,7 +29,9 @@ import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.widget.Button
 import com.jakewharton.rxbinding2.view.clicks
-import io.github.novacrypto.mnemonics.*
+import io.github.novacrypto.mnemonics.EntryFlow
+import io.github.novacrypto.mnemonics.NumericEntryEvent
+import io.github.novacrypto.mnemonics.NumericEntryModel
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_enter_mnemonic.*
@@ -56,14 +58,14 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
                 .mapIndexed { i, v -> NumericButton(v, i + 2) }
 
         val acceptClicks = Observable.merge(listOf(suggestionButton1, suggestionButton2, suggestionButton3)
-                .mapIndexed { i, b -> b.clicks().map { _ -> NumericEntryAcceptEvent(i) } })
+                .mapIndexed { i, b -> b.clicks().map { _ -> NumericEntryEvent.AcceptWord(i) } })
 
         val numericButtonClickEvents = Observable.merge(buttons2to9
                 .map { b ->
-                    b.view.clicks().map { _ -> NumericEntryNumberEvent(b.number) }
+                    b.view.clicks().map { _ -> NumericEntryEvent.KeyPress(b.number) }
                 })
 
-        val backspaceEvents = buttonBackSpace.clicks().map { _ -> NumericEntryBackspaceEvent() }
+        val backspaceEvents = buttonBackSpace.clicks().map { _ -> NumericEntryEvent.Backspace() }
 
         val userInput = Observable.merge(backspaceEvents, numericButtonClickEvents, acceptClicks)
 
