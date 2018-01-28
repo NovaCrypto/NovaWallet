@@ -49,6 +49,12 @@ allprojects {
     // ./gradlew dependencyUpdates -Drevision=release
     // https://github.com/ben-manes/gradle-versions-plugin
     apply plugin: 'com.github.ben-manes.versions'
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions {
+            allWarningsAsErrors = true
+        }
+    }
 }
 
 dependencyUpdates {

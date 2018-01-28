@@ -59,9 +59,9 @@ internal class NumericTree(val depth: Int = 0) {
     private fun evaluateCommon(words: List<String>, depth: Int): String {
         val firstWord = words.first()
         val sb = StringBuilder()
-        (0 until depth).forEach { depth ->
-            val c = firstWord[depth]
-            val matched = (1 until words.size).all { words[it][depth] == c }
+        for (d in 0 until depth) {
+            val c = firstWord[d]
+            val matched = (1 until words.size).all { words[it][d] == c }
             sb.append(if (matched) c else '?')
         }
         return sb.toString()
