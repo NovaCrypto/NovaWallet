@@ -19,44 +19,10 @@
  *  You can contact the authors via github issues.
  */
 
-apply plugin: 'java-library'
-apply plugin: 'kotlin'
-apply plugin: 'jacoco'
+package io.github.novacrypto.mnemonics
 
-buildscript {
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+sealed class NumericEntryEvent {
+    class KeyPress(val number: Int) : NumericEntryEvent()
+    class Backspace : NumericEntryEvent()
+    class AcceptWord(val acceptOption: Int) : NumericEntryEvent()
 }
-
-dependencies {
-    api 'io.reactivex.rxjava2:rxjava:2.1.9'
-
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'io.github.novacrypto:BIP32:0.0.9'
-    implementation 'io.github.novacrypto:BIP39:0.1.7'
-
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.amshove.kluent:kluent:1.34'
-}
-
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
-
-
-/** jacoco code-cov **/
-
-jacoco {
-    toolVersion = '0.8.0'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
-check.dependsOn jacocoTestReport
-
-/** end jacoco code-cov **/
