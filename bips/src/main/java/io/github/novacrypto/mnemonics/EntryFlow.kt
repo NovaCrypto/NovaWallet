@@ -45,7 +45,7 @@ class EntryFlow(private val input: Observable<NumericEntryEvent>) {
                     exactMatches = emptyList())
 
     private fun onAcceptPress(model: NumericEntryModel, event: NumericEntryEvent.AcceptWord, root: NumericTree): NumericEntryModel {
-        return model.copy(
+        return NumericEntryModel(
                 currentKey = "",
                 mnemonic = model.mnemonic + listOf(model.exactMatches[event.acceptOption]),
                 exactMatches = emptyList(),
@@ -68,11 +68,12 @@ class EntryFlow(private val input: Observable<NumericEntryEvent>) {
     private fun keyToModel(root: NumericTree, key: String, model: NumericEntryModel): NumericEntryModel {
         val node = root.find(key)
         val exactMatches = if (node.exactMatches.isEmpty() && node.words.size <= 3) node.words else node.exactMatches
-        return model.copy(
+        return NumericEntryModel(
                 currentKey = key,
                 available = node.toAvailableSet(),
                 display = node.commonPattern.replace('?', '*'),
                 exactMatches = exactMatches,
+                mnemonic = model.mnemonic,
                 previousState = model
         )
     }

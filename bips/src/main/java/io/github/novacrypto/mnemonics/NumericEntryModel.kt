@@ -21,7 +21,7 @@
 
 package io.github.novacrypto.mnemonics
 
-data class NumericEntryModel(
+class NumericEntryModel(
         val currentKey: String,
         val available: Set<Int>,
         val exactMatches: List<String>,
