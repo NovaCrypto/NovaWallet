@@ -250,14 +250,43 @@ class NumericEntryValidationTests {
         givenMnemonicInput("butter jump news kite cliff number good mansion mushroom virtual boil")
                 .assertValue { m -> m.bip39MnemonicError == MnemonicError.WORD_COUNT }
     }
-
-    private fun givenMnemonicInput(mnemonic: String, additional: String = "") =
-            givenInputSequence(numberizeAndAccept(mnemonic) + additional)
-                    .assertValue { m -> m.mnemonic == mnemonic.split(" ") }
-
-    private fun givenPartialMnemonicInput(mnemonic: String, additional: String = "") =
-            givenInputSequence(numberizeAndAccept(mnemonic) + additional)
 }
+
+class EntryFlowWordLimitTests {
+
+    @Test
+    fun `after 24 words, no more keys are available`() {
+        givenMnemonicInput("aisle perfect crush pistol fly enable ketchup mixture usage elbow insect retire bitter essay midnight claw toe swamp gather great extend street approve coach")
+                .assertValue { m -> m.bip39MnemonicError == null }
+                .assertValue { m -> noNumericButtonIsAvailable(m) }
+    }
+
+    @Test
+    fun `before 12 words (9), word count error shows`() {
+        givenMnemonicInput("device isolate odor clinic child hotel inch regret stumble")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.WORD_COUNT }
+    }
+
+    @Test
+    fun `before 12 words (6), word count error shows`() {
+        givenMnemonicInput("deer direct buffalo embrace hedgehog replace")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.WORD_COUNT }
+    }
+
+    @Test
+    fun `before 12 words (3), word count error shows`() {
+        givenMnemonicInput("napkin help genius")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.WORD_COUNT }
+    }
+
+}
+
+private fun givenMnemonicInput(mnemonic: String, additional: String = "") =
+        givenInputSequence(numberizeAndAccept(mnemonic) + additional)
+                .assertValue { m -> m.mnemonic == mnemonic.split(" ") }
+
+private fun givenPartialMnemonicInput(mnemonic: String, additional: String = "") =
+        givenInputSequence(numberizeAndAccept(mnemonic) + additional)
 
 private fun numberizeAndAccept(englishString: String): String {
     val root = English.INSTANCE.toNumericTree()

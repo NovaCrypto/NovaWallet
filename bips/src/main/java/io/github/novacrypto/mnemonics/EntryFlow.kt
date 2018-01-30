@@ -53,7 +53,7 @@ class EntryFlow(private val input: Observable<NumericEntryEvent>) {
                 currentKey = "",
                 mnemonic = mnemonic,
                 exactMatches = emptyList(),
-                available = root.toAvailableSet(),
+                available = if (mnemonic.size == 24) emptySet() else root.toAvailableSet(),
                 display = "",
                 previousState = model,
                 bip39MnemonicError = validator.validateMnemonic(mnemonic))

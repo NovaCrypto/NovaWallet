@@ -32,6 +32,7 @@ internal class Validator(wordList: WordList) {
     private val space = wordList.space.toString()
 
     fun validateMnemonic(mnemonic: List<String>): MnemonicError? {
+        if (mnemonic.size < 12) return MnemonicError.WORD_COUNT
         return try {
             validator.validate(mnemonic.joinToString(space))
             null
