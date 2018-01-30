@@ -21,15 +21,24 @@
 
 package io.github.novacrypto.mnemonics
 
-class NumericEntryModel(
-        val currentKey: String,
-        val available: Set<Int>,
-        val exactMatches: List<String>,
-        val mnemonic: List<String>,
-        val display: String,
-        val previousState: NumericEntryModel? = null,
-        val bip39MnemonicError: MnemonicError? = MnemonicError.INCOMPLETE
-) {
-    val isBackSpaceAvailable: Boolean = previousState != null
-    fun isAvailable(buttonNumber: Int) = available.contains(buttonNumber)
+import io.github.novacrypto.bip39.MnemonicValidator
+import io.github.novacrypto.bip39.Validation.InvalidChecksumException
+import io.github.novacrypto.bip39.Validation.InvalidWordCountException
+import io.github.novacrypto.bip39.WordList
+
+internal class Validator(wordList: WordList) {
+
+    private val validator = MnemonicValidator.ofWordList(wordList)
+    private val space = wordList.space.toString()
+
+    fun validateMnemonic(mnemonic: List<String>): MnemonicError? {
+        return try {
+            validator.validate(mnemonic.joinToString(space))
+            null
+        } catch (e: InvalidChecksumException) {
+            MnemonicError.CHECKSUM
+        } catch (e: InvalidWordCountException) {
+            MnemonicError.WORD_COUNT
+        }
+    }
 }

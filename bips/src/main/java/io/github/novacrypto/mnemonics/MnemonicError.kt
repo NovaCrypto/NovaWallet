@@ -21,15 +21,8 @@
 
 package io.github.novacrypto.mnemonics
 
-class NumericEntryModel(
-        val currentKey: String,
-        val available: Set<Int>,
-        val exactMatches: List<String>,
-        val mnemonic: List<String>,
-        val display: String,
-        val previousState: NumericEntryModel? = null,
-        val bip39MnemonicError: MnemonicError? = MnemonicError.INCOMPLETE
-) {
-    val isBackSpaceAvailable: Boolean = previousState != null
-    fun isAvailable(buttonNumber: Int) = available.contains(buttonNumber)
+enum class MnemonicError {
+    INCOMPLETE,
+    CHECKSUM,
+    WORD_COUNT
 }
