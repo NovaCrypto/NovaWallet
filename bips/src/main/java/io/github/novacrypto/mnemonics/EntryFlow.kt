@@ -72,12 +72,11 @@ class EntryFlow(private val input: Observable<NumericEntryEvent>) {
 
     private fun keyToModel(root: NumericTree, key: String, model: NumericEntryModel): NumericEntryModel {
         val node = root.find(key)
-        val exactMatches = if (node.exactMatches.isEmpty() && node.words.size <= 3) node.words else node.exactMatches
         return NumericEntryModel(
                 currentKey = key,
                 available = node.toAvailableSet(),
                 display = node.commonPattern.replace('?', '*'),
-                exactMatches = exactMatches,
+                exactMatches = node.top3,
                 mnemonic = model.mnemonic,
                 previousState = model
         )

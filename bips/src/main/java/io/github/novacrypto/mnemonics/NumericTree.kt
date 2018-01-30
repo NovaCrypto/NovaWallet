@@ -30,10 +30,11 @@ internal fun WordList.toNumericTree() =
                     for (word in toIterable()) it.save(word)
                 }
 
-internal class NumericTree(val depth: Int = 0) {
+internal class NumericTree(private val depth: Int = 0) {
     private val childNodes = mutableMapOf<Char, NumericTree>()
     val words = mutableListOf<String>()
     val exactMatches = mutableListOf<String>()
+    val top3 get() = if (words.size <= 3) words else exactMatches
 
     val wordCount get() = words.size
 
