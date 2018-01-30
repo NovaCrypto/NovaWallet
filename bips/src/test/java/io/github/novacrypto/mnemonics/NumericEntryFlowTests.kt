@@ -21,6 +21,7 @@
 
 package io.github.novacrypto.mnemonics
 
+import io.github.novacrypto.bip39.wordlists.English
 import io.reactivex.Observable
 import org.amshove.kluent.`should equal`
 import org.junit.Test
@@ -196,6 +197,69 @@ class EntryFlowWordAcceptanceTests {
         givenInputSequence("6874b,887c,887a")
                 .assertValue { m -> m.mnemonic `should equal` listOf("music", "turtle", "turkey"); true }
     }
+}
+
+class NumericEntryValidationTests {
+
+    @Test
+    fun `initial state the error reports as incomplete`() {
+        givenInputSequence("")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.INCOMPLETE }
+    }
+
+    @Test
+    fun `on a couple of keys presses, the error reports as incomplete`() {
+        givenInputSequence("28")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.INCOMPLETE }
+    }
+
+    @Test
+    fun `valid mnemonic is valid`() {
+        givenMnemonicInput("butter jump news kite cliff number good mansion mushroom virtual boil duty")
+                .assertValue { m -> m.bip39MnemonicError == null }
+    }
+
+    @Test
+    fun `partway though a word it shows as incomplete`() {
+        givenMnemonicInput("butter jump news kite cliff number good mansion mushroom virtual boil", "388")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.INCOMPLETE }
+                .assertValue { m -> m `key is` "388" }
+    }
+
+    @Test
+    fun `backspacing a valid mnemonic, shows as incomplete`() {
+        givenPartialMnemonicInput("butter jump news kite cliff number good mansion mushroom virtual boil duty", "<")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.INCOMPLETE }
+                .assertValue { m -> m `key is` "3889" }
+    }
+
+    @Test
+    fun `invalid mnemonic by way of checksum`() {
+        givenMnemonicInput("butter jump news kite cliff number good mansion mushroom virtual boil boil")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.CHECKSUM }
+    }
+
+    @Test
+    fun `invalid mnemonic by way of wordcount`() {
+        givenMnemonicInput("butter jump news kite cliff number good mansion mushroom virtual boil")
+                .assertValue { m -> m.bip39MnemonicError == MnemonicError.WORD_COUNT }
+    }
+
+    private fun givenMnemonicInput(mnemonic: String, additional: String = "") =
+            givenInputSequence(numberizeAndAccept(mnemonic) + additional)
+                    .assertValue { m -> m.mnemonic == mnemonic.split(" ") }
+
+    private fun givenPartialMnemonicInput(mnemonic: String, additional: String = "") =
+            givenInputSequence(numberizeAndAccept(mnemonic) + additional)
+}
+
+private fun numberizeAndAccept(englishString: String): String {
+    val root = English.INSTANCE.toNumericTree()
+    return englishString.split(" ")
+            .map { it to numberize(it) }
+            .joinToString(",") {
+                it.second + ('a' + root.find(it.second).exactMatches.indexOf(it.first))
+            }
 }
 
 private fun givenInputSequence(sequence: String) =

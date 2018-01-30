@@ -21,11 +21,14 @@
 
 package io.github.novacrypto.mnemonics
 
+import io.github.novacrypto.bip39.WordList
 import io.github.novacrypto.bip39.wordlists.English
 import io.reactivex.Observable
 
 class EntryFlow(private val input: Observable<NumericEntryEvent>) {
-    private val root: NumericTree = English.INSTANCE.toNumericTree()
+    private val wordList: WordList = English.INSTANCE
+    private val root: NumericTree = wordList.toNumericTree()
+    private val validator: Validator = Validator(wordList)
 
     fun modelStream(): Observable<NumericEntryModel> =
             input.scan(initialState(),
@@ -45,13 +48,15 @@ class EntryFlow(private val input: Observable<NumericEntryEvent>) {
                     exactMatches = emptyList())
 
     private fun onAcceptPress(model: NumericEntryModel, event: NumericEntryEvent.AcceptWord, root: NumericTree): NumericEntryModel {
+        val mnemonic = model.mnemonic + listOf(model.exactMatches[event.acceptOption])
         return NumericEntryModel(
                 currentKey = "",
-                mnemonic = model.mnemonic + listOf(model.exactMatches[event.acceptOption]),
+                mnemonic = mnemonic,
                 exactMatches = emptyList(),
                 available = root.toAvailableSet(),
                 display = "",
-                previousState = model)
+                previousState = model,
+                bip39MnemonicError = validator.validateMnemonic(mnemonic))
     }
 
     private fun onBackspacePress(model: NumericEntryModel) = model.previousState ?: model
