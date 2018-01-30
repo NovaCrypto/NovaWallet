@@ -86,7 +86,7 @@ class EntryFlowTests {
     @Test
     fun `on enter a word - full sequence, partial of another sequence`() {
         givenInputSequence("9463")
-                .assertValue { m -> m `single word is` "wine" }
+                .assertValue { m -> m.exactMatches == listOf("window", "wine") }
     }
 
     @Test
@@ -107,7 +107,7 @@ class EntryFlowTests {
     fun `backspace window to wine`() {
         givenInputSequence("94636<")
                 .assertValue { m -> m `key is` "9463" }
-                .assertValue { m -> m `single word is` "wine" }
+                .assertValue { m -> m.exactMatches == listOf("window", "wine") }
     }
 
     @Test
@@ -132,6 +132,12 @@ class EntryFlowTests {
     fun `4 words not shown available after 2268`() {
         givenInputSequence("2268")
                 .assertValue { m -> m.exactMatches == emptyList<String>() }
+    }
+
+    @Test
+    fun `where there's an exact match and the partial matches fit, show all`() {
+        givenInputSequence("4273")
+                .assertValue { m -> m.exactMatches == listOf("garden", "hard") }
     }
 
 }
@@ -258,7 +264,7 @@ private fun numberizeAndAccept(englishString: String): String {
     return englishString.split(" ")
             .map { it to numberize(it) }
             .joinToString(",") {
-                it.second + ('a' + root.find(it.second).exactMatches.indexOf(it.first))
+                it.second + ('a' + root.find(it.second).top3.indexOf(it.first))
             }
 }
 

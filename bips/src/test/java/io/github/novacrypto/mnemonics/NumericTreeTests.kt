@@ -64,6 +64,18 @@ class NumericTreeTests {
     }
 
     @Test
+    fun `top 3 same lengths - 2226`() {
+        val subTree = givenEnglishTree().find("2226")
+        subTree.top3 `should equal` listOf("abandon", "account", "bacon")
+    }
+
+    @Test
+    fun `top 3, 2 words different lengths - 4273`() {
+        val subTree = givenEnglishTree().find("4273")
+        subTree.top3 `should equal` listOf("garden", "hard")
+    }
+
+    @Test
     fun `direct find - witness`() {
         givenEnglishTree().find("948") `should contain only` "witness"
     }
@@ -96,6 +108,7 @@ class NumericTreeTests {
             node.words `should contain` word
             node.exactMatches `should contain` word
             node.exactMatches.size `should be less or equal to` 3
+            node.top3.size `should be less or equal to` 3
         }
     }
 }
