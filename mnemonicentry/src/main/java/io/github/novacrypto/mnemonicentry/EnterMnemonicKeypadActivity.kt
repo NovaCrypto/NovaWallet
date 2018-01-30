@@ -24,8 +24,7 @@ package io.github.novacrypto.mnemonicentry
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
+import android.view.View.*
 import android.view.WindowManager
 import android.widget.Button
 import com.jakewharton.rxbinding2.view.clicks
@@ -91,6 +90,13 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
         setSuggestionButton(suggestionButton1, model, 0)
         setSuggestionButton(suggestionButton2, model, 1)
         setSuggestionButton(suggestionButton3, model, 2)
+        if (model.bip39MnemonicError == null) {
+            valid_mnemonic_animation.visibility = VISIBLE
+            valid_mnemonic_animation.playAnimation()
+        } else {
+            valid_mnemonic_animation.visibility = INVISIBLE
+            valid_mnemonic_animation.pauseAnimation()
+        }
     }
 
     private fun setSuggestionButton(suggestionButton: Button, model: NumericEntryModel, index: Int) {
