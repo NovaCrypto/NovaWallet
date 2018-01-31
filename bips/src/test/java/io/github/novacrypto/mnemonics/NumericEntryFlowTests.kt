@@ -255,6 +255,27 @@ class NumericEntryValidationTests {
 class EntryFlowWordLimitTests {
 
     @Test
+    fun `15 words is valid`() {
+        givenMnemonicInput("never dog canyon spread captain hill desk arrest tired face strong oven jewel image reason")
+                .assertValue { m -> m.bip39MnemonicError == null }
+                .assertValue { m -> everyButtonIsAvailable(m) }
+    }
+
+    @Test
+    fun `18 words is valid`() {
+        givenMnemonicInput("lock omit clean move purse crumble history speak hint situate speed slight soccer raise decrease world board range")
+                .assertValue { m -> m.bip39MnemonicError == null }
+                .assertValue { m -> everyButtonIsAvailable(m) }
+    }
+
+    @Test
+    fun `21 words is valid`() {
+        givenMnemonicInput("illness market index jelly twice use often must fun hood hope mirror metal idle absurd silent oxygen garbage best rose curve")
+                .assertValue { m -> m.bip39MnemonicError == null }
+                .assertValue { m -> everyButtonIsAvailable(m) }
+    }
+
+    @Test
     fun `after 24 words, no more keys are available`() {
         givenMnemonicInput("aisle perfect crush pistol fly enable ketchup mixture usage elbow insect retire bitter essay midnight claw toe swamp gather great extend street approve coach")
                 .assertValue { m -> m.bip39MnemonicError == null }
