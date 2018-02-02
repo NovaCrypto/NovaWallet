@@ -29,12 +29,11 @@ import io.github.novacrypto.bip39.WordList
 internal class Validator(wordList: WordList) {
 
     private val validator = MnemonicValidator.ofWordList(wordList)
-    private val space = wordList.space.toString()
 
     fun validateMnemonic(mnemonic: List<String>): MnemonicError? {
         if (mnemonic.size < 12) return MnemonicError.WORD_COUNT
         return try {
-            validator.validate(mnemonic.joinToString(space))
+            validator.validate(mnemonic)
             null
         } catch (e: InvalidChecksumException) {
             MnemonicError.CHECKSUM
