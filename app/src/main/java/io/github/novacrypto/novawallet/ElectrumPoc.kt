@@ -36,10 +36,7 @@ class SocketThread {
         thread {
             val socket = StratumSocket.open("testnetnode.arihanc.com", 51001)
             socket.use { s ->
-                s.sendRx("server.version", "2.9.2", "0.10")
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe { it -> Timber.d("Server says: %s", it) }
+                keepAlive(s)
 
                 electrum = Electrum(socket)
 
@@ -49,9 +46,17 @@ class SocketThread {
                         .subscribe { it -> Timber.d("Balance is: %s", it) }
 
                 while (true) {
-                    Thread.sleep(1000)
+                    Thread.sleep(60 * 1000)
+                    keepAlive(s)
                 }
             }
         }
+    }
+
+    private fun keepAlive(s: StratumSocket) {
+        s.sendRx("server.version", "2.9.2", "0.10")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { it -> Timber.d("Server says: %s", it) }
     }
 }
