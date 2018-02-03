@@ -19,4 +19,23 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner', ':bips', ':mnemonicentry', ':security', ':lithokotlin', ':incubator'
+apply plugin: 'java-library'
+apply plugin: 'kotlin'
+
+buildscript {
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+dependencies {
+    api 'io.reactivex.rxjava2:rxjava:2.1.9'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.amshove.kluent:kluent:1.34'
+}
+
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
