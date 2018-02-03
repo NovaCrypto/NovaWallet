@@ -21,6 +21,9 @@
 
 package io.github.novacrypto.mnemonics
 
+import io.github.novacrypto.bip32.ExtendedPrivateKey
+import io.github.novacrypto.bip32.networks.Bitcoin
+import io.github.novacrypto.bip39.SeedCalculator
 import io.github.novacrypto.bip39.WordList
 import io.github.novacrypto.bip39.wordlists.English
 import io.reactivex.Observable
@@ -29,6 +32,7 @@ class EntryFlow(private val input: Observable<NumericEntryEvent>) {
     private val wordList: WordList = English.INSTANCE
     private val root: NumericTree = wordList.toNumericTree()
     private val validator: Validator = Validator(wordList)
+    private val seedCalculator = SeedCalculator().withWordsFromWordList(wordList)
 
     fun modelStream(): Observable<NumericEntryModel> =
             input.scan(initialState(),
@@ -56,7 +60,14 @@ class EntryFlow(private val input: Observable<NumericEntryEvent>) {
                 available = if (mnemonic.size == 24) emptySet() else root.toAvailableSet(),
                 display = "",
                 previousState = model,
-                bip39MnemonicError = validator.validateMnemonic(mnemonic))
+                bip39MnemonicError = validator.validateMnemonic(mnemonic),
+                rootXprv = calculateXprv(mnemonic))
+    }
+
+    private fun calculateXprv(mnemonic: List<String>): String {
+        return ExtendedPrivateKey.fromSeed(
+                seedCalculator.calculateSeed(mnemonic, ""),
+                Bitcoin.MAIN_NET).extendedBase58()
     }
 
     private fun onBackspacePress(model: NumericEntryModel) = model.previousState ?: model

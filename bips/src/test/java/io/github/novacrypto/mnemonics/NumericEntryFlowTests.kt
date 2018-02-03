@@ -255,6 +255,27 @@ class NumericEntryValidationTests {
 class EntryFlowWordLimitTests {
 
     @Test
+    fun `15 words is valid`() {
+        givenMnemonicInput("never dog canyon spread captain hill desk arrest tired face strong oven jewel image reason")
+                .assertValue { m -> m.bip39MnemonicError == null }
+                .assertValue { m -> everyButtonIsAvailable(m) }
+    }
+
+    @Test
+    fun `18 words is valid`() {
+        givenMnemonicInput("lock omit clean move purse crumble history speak hint situate speed slight soccer raise decrease world board range")
+                .assertValue { m -> m.bip39MnemonicError == null }
+                .assertValue { m -> everyButtonIsAvailable(m) }
+    }
+
+    @Test
+    fun `21 words is valid`() {
+        givenMnemonicInput("illness market index jelly twice use often must fun hood hope mirror metal idle absurd silent oxygen garbage best rose curve")
+                .assertValue { m -> m.bip39MnemonicError == null }
+                .assertValue { m -> everyButtonIsAvailable(m) }
+    }
+
+    @Test
     fun `after 24 words, no more keys are available`() {
         givenMnemonicInput("aisle perfect crush pistol fly enable ketchup mixture usage elbow insect retire bitter essay midnight claw toe swamp gather great extend street approve coach")
                 .assertValue { m -> m.bip39MnemonicError == null }
@@ -279,6 +300,27 @@ class EntryFlowWordLimitTests {
                 .assertValue { m -> m.bip39MnemonicError == MnemonicError.WORD_COUNT }
     }
 
+}
+
+class RootXprvTests {
+
+    @Test
+    fun `12 words Root xprv`() {
+        givenMnemonicInput("canvas board before salon prison expose action exist cycle hybrid simple father")
+                .assertValue { m -> m.rootXprv == "xprv9s21ZrQH143K4ZxFZTAyky5RFeyuboFTuEGbXzEm1DRUaeFn9chknYxeDv725BAXUMUXrRREs5jBsMY2tJEcJr5CK8135txBdSuZWXaDUS3" }
+    }
+
+    @Test
+    fun `15 words Root xprv`() {
+        givenMnemonicInput("motion spring copper double release cage business employ insane figure large robust cost utility mixture")
+                .assertValue { m -> m.rootXprv == "xprv9s21ZrQH143K2o632LMYwmdF4dBa3NyvSQpUvdAVgZ9ujR5jeTh4qUse4S6tHEaAn4Cwge6DqKn8u1teShhqSBsgNReQvB2YKEUuNZ8DFzJ" }
+    }
+
+    @Test
+    fun `24 words Root xprv`() {
+        givenMnemonicInput("climb wear team abandon giggle pledge vote hurt combine industry duck flee electric rifle inform neck accident flip merit material illegal bargain myth cable")
+                .assertValue { m -> m.rootXprv == "xprv9s21ZrQH143K45oiSkqwJiAfcD4nKscyH5yDq8HX7HwM8zvzHDPvgVdXtM28xQPF7M2s3r9JbbkeK9ntvkzegLcfy3M9vr9MXXFFhBvLFqZ" }
+    }
 }
 
 private fun givenMnemonicInput(mnemonic: String, additional: String = "") =
