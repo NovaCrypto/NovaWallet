@@ -46,6 +46,7 @@ android {
 }
 
 dependencies {
+    api project(':security')
     implementation project(':bips')
 
     implementation 'com.airbnb.android:lottie:2.2.5'

@@ -29,15 +29,25 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import io.github.novacrypto.base58.Base58.base58Encode
+import io.github.novacrypto.mnemonicentry.EnterMnemonicKeypadActivity
 import io.github.novacrypto.novawallet.customscanners.XPubScannerActivity
 import io.github.novacrypto.novawallet.uielements.Fab
 import io.github.novacrypto.novawallet.uielements.MaterialSheetFabAnimator
 import io.github.novacrypto.qrscanner.ScanQrActivity
+import io.github.novacrypto.security.AsymmetricSecurity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_menu_card.*
 import timber.log.Timber
 
+private const val REQUEST_SCAN = 1
+private const val REQUEST_MNEMONIC = 2
+
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private val security = AsymmetricSecurity()
+    }
 
     private lateinit var materialSheetFab: MaterialSheetFabAnimator<Fab>
 
@@ -97,14 +107,25 @@ class MainActivity : AppCompatActivity() {
             materialSheetFab.hideSheetAndAfter {
                 startActivityForResult(Intent(this, XPubScannerActivity::class.java).apply {
                     putExtra(ScanQrActivity.OPTION_SHOW_BARCODE_BOX, BuildConfig.DEBUG)
-                }, 1)
+                }, REQUEST_SCAN)
+            }
+        }
+        add_mnemonic_account.setOnClickListener { _ ->
+            Timber.d("Add mnemonic account")
+            materialSheetFab.hideSheetAndAfter {
+                startActivityForResult(EnterMnemonicKeypadActivity.intentForGettingXprv(this, security), REQUEST_MNEMONIC)
             }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_SCAN && resultCode == Activity.RESULT_OK) {
             Timber.d("Activity got barcode back [%s]", data?.extras?.getString(ScanQrActivity.BARCODE_DATA))
+        }
+        if (requestCode == REQUEST_MNEMONIC && resultCode == Activity.RESULT_OK) {
+            val encoded = data?.extras?.getString(EnterMnemonicKeypadActivity.RESULT_XPRV)!!
+            Timber.d("Activity got xprv back encoded [%s]", encoded)
+            Timber.d("Activity got xprv back [%s]", base58Encode(security.decoder().decodeByteArray(encoded)))
         }
     }
 }
