@@ -33,6 +33,8 @@ import com.jakewharton.rxbinding2.view.clicks
 import io.github.novacrypto.mnemonics.EntryFlow
 import io.github.novacrypto.mnemonics.NumericEntryEvent
 import io.github.novacrypto.mnemonics.NumericEntryModel
+import io.github.novacrypto.security.AsymmetricSecurity
+import io.github.novacrypto.security.PublicKeyEncoded
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.activity_enter_mnemonic.*
@@ -42,6 +44,7 @@ import kotlinx.android.synthetic.main.keypad_en.*
 class EnterMnemonicKeypadActivity : AppCompatActivity() {
 
     companion object {
+        private const val ENCODE_KEY = "ENCODE_KEY"
         private const val MODE = "MODE_ROOT_XPRV"
         private const val MODE_ROOT_XPRV = "MODE_ROOT_XPRV"
 
@@ -51,9 +54,10 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
          * Get an intent that will return on success the value of the entered mnemonic as the root
          * Xprv.
          */
-        fun intentForGettingXprv(context: Context) =
+        fun intentForGettingXprv(context: Context, publicKey: PublicKeyEncoded) =
                 Intent(context, EnterMnemonicKeypadActivity::class.java).apply {
                     putExtra(MODE, MODE_ROOT_XPRV)
+                    putExtra(ENCODE_KEY, publicKey.publicKeyAsString)
                 }
     }
 
@@ -74,7 +78,7 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
             preventScreenshots()
         }
 
-        setResultMode(intent.getStringExtra(MODE))
+        setResultMode(intent.getStringExtra(MODE), intent.getStringExtra(ENCODE_KEY))
 
         buttons2to9 = listOf(button2, button3, button4, button5, button6, button7, button8, button9)
                 .mapIndexed { i, v -> NumericButton(v, i + 2) }
@@ -96,10 +100,18 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
                 .subscribe { model -> update(model) })
     }
 
-    private fun setResultMode(extraModeString: String?) {
+    private fun setResultMode(extraModeString: String?, encodeKey: String?) {
         putModelInResult =
                 when (extraModeString) {
-                    MODE_ROOT_XPRV -> { m, intent -> intent.putExtra(RESULT_XPRV, m.rootXprv) }
+                    MODE_ROOT_XPRV -> { m, intent ->
+                        m.rootXprv.let {
+                            if (it != null) {
+                                intent.putExtra(RESULT_XPRV, encodeKey.encode(it))
+                            } else {
+                                throw RuntimeException("Model contained no rootXprv")
+                            }
+                        }
+                    }
                     else -> { _, _ -> }
                 }
     }
@@ -144,4 +156,9 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
         suggestionButton.visibility = if (valid) VISIBLE else GONE
         if (valid) suggestionButton.text = model.exactMatches[index]
     }
+}
+
+private fun String?.encode(data: ByteArray): String? {
+    if (this == null) throw RuntimeException("Public key was null")
+    return AsymmetricSecurity.encoder(this).encode(data)
 }

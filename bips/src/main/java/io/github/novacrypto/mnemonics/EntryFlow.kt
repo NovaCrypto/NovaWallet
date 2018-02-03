@@ -64,11 +64,10 @@ class EntryFlow(private val input: Observable<NumericEntryEvent>) {
                 rootXprv = calculateXprv(mnemonic))
     }
 
-    private fun calculateXprv(mnemonic: List<String>): String {
-        return ExtendedPrivateKey.fromSeed(
-                seedCalculator.calculateSeed(mnemonic, ""),
-                Bitcoin.MAIN_NET).extendedBase58()
-    }
+    private fun calculateXprv(mnemonic: List<String>) =
+            ExtendedPrivateKey.fromSeed(
+                    seedCalculator.calculateSeed(mnemonic, ""),
+                    Bitcoin.MAIN_NET).extendedKeyByteArray()
 
     private fun onBackspacePress(model: NumericEntryModel) = model.previousState ?: model
 
