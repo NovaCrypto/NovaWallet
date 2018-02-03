@@ -43,6 +43,8 @@ import io.github.novacrypto.bip32.networks.Litecoin
 import io.github.novacrypto.bip44.Account
 import io.github.novacrypto.bip44.AddressIndex
 import io.github.novacrypto.bip44.BIP44
+import io.github.novacrypto.bip44.BIP44.m
+import io.github.novacrypto.bip44.Purpose
 import io.github.novacrypto.mnemonicentry.EnterMnemonicKeypadActivity
 import io.github.novacrypto.novawallet.customscanners.XPubScannerActivity
 import io.github.novacrypto.novawallet.uielements.Fab
@@ -158,7 +160,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQUEST_SCAN && resultCode == Activity.RESULT_OK) {
             val barcode = data?.extras?.getString(ScanQrActivity.BARCODE_DATA) ?: ""
             Timber.d("Activity got barcode back [%s]", barcode)
-            quickDemo(barcode)
+            quickDemo(barcode, BIP44.m().purpose44())
         }
         if (requestCode == REQUEST_MNEMONIC && resultCode == Activity.RESULT_OK) {
             val encoded = data?.extras?.getString(EnterMnemonicKeypadActivity.RESULT_XPRV)!!
@@ -177,19 +179,28 @@ class MainActivity : AppCompatActivity() {
                 .deserialize(rootXrpv)
                 .deriveWithCache()
         listOf<Network>(Bitcoin.MAIN_NET, Bitcoin.TEST_NET, Litecoin.MAIN_NET)
-                .map {
-                    deriver.derive(BIP44.m()
-                            .purpose44()
-                            .coinType(networkToBip44Coin(it))
-                            .account(0), Account.DERIVATION)
-                            .neuter()
-                            .toNetwork(it)
-                            .extendedBase58()
+                .flatMap {
+                    listOf(
+                            deriver.derive(m()
+                                    .purpose44()
+                                    .coinType(networkToBip44Coin(it))
+                                    .account(0), Account.DERIVATION)
+                                    .neuter()
+                                    .toNetwork(it)
+                                    .extendedBase58() to m().purpose44(),
+                            deriver.derive(m()
+                                    .purpose49()
+                                    .coinType(networkToBip44Coin(it))
+                                    .account(0), Account.DERIVATION)
+                                    .neuter()
+                                    .toNetwork(it)
+                                    .extendedBase58() to m().purpose49()
+                    )
                 }
-                .forEach { quickDemo(it) }
+                .forEach { quickDemo(it.first, it.second) }
     }
 
-    private fun quickDemo(barcode: String) {
+    private fun quickDemo(barcode: String, purpose: Purpose) {
         try {
             val public = ExtendedPublicKey.deserializer().deserialize(barcode)
             if (public.depth() == 4) {
@@ -199,9 +210,7 @@ class MainActivity : AppCompatActivity() {
                 throw Exception("Account number not hardened")
             }
             val deriver = public.deriveWithCache()
-            val external = BIP44
-                    .m()
-                    .purpose44()
+            val external = purpose
                     .coinType(networkToBip44Coin(public.network()))
                     .account((public.childNumber() - 0x80000000).toInt())
                     .external()
@@ -213,7 +222,13 @@ class MainActivity : AppCompatActivity() {
                         path = addressIndex.toString(),
                         address = deriver
                                 .derive(addressIndex, AddressIndex.DERIVATION_FROM_ACCOUNT)
-                                .p2pkhAddress())
+                                .run {
+                                    when {
+                                        purpose.value == 44 -> p2pkhAddress()
+                                        purpose.value == 49 -> p2shAddress()
+                                        else -> throw RuntimeException("Unknown purpose")
+                                    }
+                                })
             }
         } catch (e: Exception) {
             accounts += AddressModel(
