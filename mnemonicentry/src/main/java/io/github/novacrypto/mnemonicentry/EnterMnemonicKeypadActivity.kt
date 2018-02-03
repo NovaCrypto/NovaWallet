@@ -21,6 +21,8 @@
 
 package io.github.novacrypto.mnemonicentry
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
@@ -38,11 +40,30 @@ import kotlinx.android.synthetic.main.fragment_enter_mnemonic.*
 import kotlinx.android.synthetic.main.keypad_en.*
 
 class EnterMnemonicKeypadActivity : AppCompatActivity() {
+
+    companion object {
+        private const val MODE = "MODE_ROOT_XPRV"
+        private const val MODE_ROOT_XPRV = "MODE_ROOT_XPRV"
+
+        const val RESULT_XPRV = "RESULT_XPRV"
+
+        /**
+         * Get an intent that will return on success the value of the entered mnemonic as the root
+         * Xprv.
+         */
+        fun intentForGettingXprv(context: Context) =
+                Intent(context, EnterMnemonicKeypadActivity::class.java).apply {
+                    putExtra(MODE, MODE_ROOT_XPRV)
+                }
+    }
+
     private var dispose = CompositeDisposable()
 
     class NumericButton(val view: View, val number: Int)
 
     private lateinit var buttons2to9: List<NumericButton>
+
+    private lateinit var putModelInResult: (NumericEntryModel, Intent) -> Unit
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +73,8 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
         if (!BuildConfig.DEBUG) {
             preventScreenshots()
         }
+
+        setResultMode(intent.getStringExtra(MODE))
 
         buttons2to9 = listOf(button2, button3, button4, button5, button6, button7, button8, button9)
                 .mapIndexed { i, v -> NumericButton(v, i + 2) }
@@ -71,6 +94,14 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
         dispose.add(EntryFlow(userInput)
                 .modelStream()
                 .subscribe { model -> update(model) })
+    }
+
+    private fun setResultMode(extraModeString: String?) {
+        putModelInResult =
+                when (extraModeString) {
+                    MODE_ROOT_XPRV -> { m, intent -> intent.putExtra(RESULT_XPRV, m.rootXprv) }
+                    else -> { _, _ -> }
+                }
     }
 
     private fun preventScreenshots() {
@@ -93,10 +124,19 @@ class EnterMnemonicKeypadActivity : AppCompatActivity() {
         if (model.bip39MnemonicError == null) {
             valid_mnemonic_animation.visibility = VISIBLE
             valid_mnemonic_animation.playAnimation()
+            valid_mnemonic_animation.setOnClickListener { finishWithResult(model) }
         } else {
             valid_mnemonic_animation.visibility = INVISIBLE
             valid_mnemonic_animation.pauseAnimation()
+            valid_mnemonic_animation.setOnClickListener(null)
         }
+    }
+
+    private fun finishWithResult(resultModel: NumericEntryModel) {
+        setResult(RESULT_OK, Intent().apply {
+            putModelInResult(resultModel, this)
+        })
+        finish()
     }
 
     private fun setSuggestionButton(suggestionButton: Button, model: NumericEntryModel, index: Int) {

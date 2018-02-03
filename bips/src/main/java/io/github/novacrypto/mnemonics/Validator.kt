@@ -31,6 +31,7 @@ internal class Validator(wordList: WordList) {
     private val validator = MnemonicValidator.ofWordList(wordList)
 
     fun validateMnemonic(mnemonic: List<String>): MnemonicError? {
+        // TODO: Remove once BIP39 implements this: https://github.com/NovaCrypto/BIP39/issues/35
         if (mnemonic.size < 12) return MnemonicError.WORD_COUNT
         return try {
             validator.validate(mnemonic)

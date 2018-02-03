@@ -28,7 +28,8 @@ class NumericEntryModel(
         val mnemonic: List<String>,
         val display: String,
         val previousState: NumericEntryModel? = null,
-        val bip39MnemonicError: MnemonicError? = MnemonicError.INCOMPLETE
+        val bip39MnemonicError: MnemonicError? = MnemonicError.INCOMPLETE,
+        val rootXprv: String = ""
 ) {
     val isBackSpaceAvailable: Boolean = previousState != null
     fun isAvailable(buttonNumber: Int) = available.contains(buttonNumber)

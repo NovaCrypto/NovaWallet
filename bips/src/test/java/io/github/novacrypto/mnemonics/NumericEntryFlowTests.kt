@@ -302,6 +302,27 @@ class EntryFlowWordLimitTests {
 
 }
 
+class RootXprvTests {
+
+    @Test
+    fun `12 words Root xprv`() {
+        givenMnemonicInput("canvas board before salon prison expose action exist cycle hybrid simple father")
+                .assertValue { m -> m.rootXprv == "xprv9s21ZrQH143K4ZxFZTAyky5RFeyuboFTuEGbXzEm1DRUaeFn9chknYxeDv725BAXUMUXrRREs5jBsMY2tJEcJr5CK8135txBdSuZWXaDUS3" }
+    }
+
+    @Test
+    fun `15 words Root xprv`() {
+        givenMnemonicInput("motion spring copper double release cage business employ insane figure large robust cost utility mixture")
+                .assertValue { m -> m.rootXprv == "xprv9s21ZrQH143K2o632LMYwmdF4dBa3NyvSQpUvdAVgZ9ujR5jeTh4qUse4S6tHEaAn4Cwge6DqKn8u1teShhqSBsgNReQvB2YKEUuNZ8DFzJ" }
+    }
+
+    @Test
+    fun `24 words Root xprv`() {
+        givenMnemonicInput("climb wear team abandon giggle pledge vote hurt combine industry duck flee electric rifle inform neck accident flip merit material illegal bargain myth cable")
+                .assertValue { m -> m.rootXprv == "xprv9s21ZrQH143K45oiSkqwJiAfcD4nKscyH5yDq8HX7HwM8zvzHDPvgVdXtM28xQPF7M2s3r9JbbkeK9ntvkzegLcfy3M9vr9MXXFFhBvLFqZ" }
+    }
+}
+
 private fun givenMnemonicInput(mnemonic: String, additional: String = "") =
         givenInputSequence(numberizeAndAccept(mnemonic) + additional)
                 .assertValue { m -> m.mnemonic == mnemonic.split(" ") }
