@@ -32,7 +32,9 @@ public final class Base16 {
     }
 
     public byte[] decode(final String data) {
-        final byte[] bytes = new byte[data.length() / 2];
+        final int length = data.length();
+        if (length % 2 == 1) throw new RuntimeException("Odd length unexpected");
+        final byte[] bytes = new byte[length / 2];
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = (byte) (parseHex(data.charAt(i * 2)) << 4 | parseHex(data.charAt(i * 2 + 1)));
         }

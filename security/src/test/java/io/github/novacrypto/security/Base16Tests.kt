@@ -64,10 +64,52 @@ class Base16Tests {
     }
 
     @Test
+    fun `decode all values uppercase byte`() {
+        val base16 = Base16()
+        for (i in 0..255) {
+            base16.decode(base16.encode(byteArrayOf(i.toByte())).toUpperCase()) `should equal` byteArrayOf(i.toByte())
+        }
+    }
+
+    @Test
     fun `decode all values byte in second position`() {
         val base16 = Base16()
         for (i in 0..255) {
             base16.decode(base16.encode(byteArrayOf(17, i.toByte()))) `should equal` byteArrayOf(17, i.toByte())
         }
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun `invalid length`() {
+        Base16().decode("123")
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun `invalid character`() {
+        Base16().decode("  ")
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun `invalid character before a`() {
+        val c: Char = 'a' - 1
+        Base16().decode("0" + c)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun `invalid character before A`() {
+        val c: Char = 'A' - 1
+        Base16().decode("0" + c)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun `invalid character after F`() {
+        val c: Char = 'F' + 1
+        Base16().decode("0" + c)
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun `invalid character after f`() {
+        val c: Char = 'f' + 1
+        Base16().decode("0" + c)
     }
 }

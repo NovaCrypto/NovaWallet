@@ -55,7 +55,7 @@ class AsymmetricSecurity : PublicKeyEncoded {
         return object : Decoder {
             private val base16 = Base16()
 
-            val cipher = Cipher.getInstance("RSA").apply {
+            private val cipher = Cipher.getInstance("RSA").apply {
                 init(Cipher.DECRYPT_MODE, privateKey)
             }
 
