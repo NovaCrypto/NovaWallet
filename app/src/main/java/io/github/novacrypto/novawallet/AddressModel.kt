@@ -23,8 +23,9 @@ package io.github.novacrypto.novawallet
 
 import android.support.annotation.DrawableRes
 
-class AddressModel(
+data class AddressModel(
         @DrawableRes val coinIcon: Int,
         val path: String,
-        val address: String
+        val address: String,
+        val value: String = "-"
 )

@@ -45,6 +45,7 @@ import io.github.novacrypto.bip44.AddressIndex
 import io.github.novacrypto.bip44.BIP44
 import io.github.novacrypto.bip44.BIP44.m
 import io.github.novacrypto.bip44.Purpose
+import io.github.novacrypto.incubator.electrum.Electrum
 import io.github.novacrypto.mnemonicentry.EnterMnemonicKeypadActivity
 import io.github.novacrypto.novawallet.customscanners.XPubScannerActivity
 import io.github.novacrypto.novawallet.uielements.Fab
@@ -52,6 +53,9 @@ import io.github.novacrypto.novawallet.uielements.MaterialSheetFabAnimator
 import io.github.novacrypto.novawallet.uilitho.ListSection
 import io.github.novacrypto.qrscanner.ScanQrActivity
 import io.github.novacrypto.security.AsymmetricSecurity
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_menu_card.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -72,8 +76,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var lithoView: LithoView
 
+    private lateinit var socketThread: SocketThread
+
+    val electrum: Electrum
+        get() = socketThread.electrum
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        socketThread = SocketThread()
 
         context = ComponentContext(this)
 
@@ -178,7 +189,7 @@ class MainActivity : AppCompatActivity() {
                 .deserializer()
                 .deserialize(rootXrpv)
                 .deriveWithCache()
-        listOf<Network>(Bitcoin.MAIN_NET, Bitcoin.TEST_NET, Litecoin.MAIN_NET)
+        listOf<Network>(Bitcoin.TEST_NET)//Bitcoin.MAIN_NET, Bitcoin.TEST_NET, Litecoin.MAIN_NET)
                 .flatMap {
                     listOf(
                             deriver.derive(m()
@@ -237,6 +248,20 @@ class MainActivity : AppCompatActivity() {
                     address = e.message.toString())
             Timber.e(e)
         }
+        updateLithoView()
+
+        Observable.merge(
+                accounts.map {
+                    electrum.balanceOf(it.address)
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    updateValueOfAddress(it.address, it.toString())
+                }
+    }
+
+    private fun updateLithoView() {
         val component =
                 RecyclerCollectionComponent.create(context)
                         .disablePTR(true)
@@ -244,6 +269,14 @@ class MainActivity : AppCompatActivity() {
                                 .data(accounts).build())
                         .build()
         lithoView.setComponent(component)
+    }
+
+    private fun updateValueOfAddress(address: String, newValue: String) {
+        val index = accounts.indexOfFirst { it.address == address }
+        val toMutableList = accounts.toMutableList()
+        toMutableList[index] = accounts[index].copy(value = newValue)
+        accounts = toMutableList
+        updateLithoView()
     }
 
     private fun coinRes(network: Network?) =

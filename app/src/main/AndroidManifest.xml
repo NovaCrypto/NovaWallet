@@ -22,6 +22,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.github.novacrypto.novawallet">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".WalletApplication"
         android:allowBackup="true"

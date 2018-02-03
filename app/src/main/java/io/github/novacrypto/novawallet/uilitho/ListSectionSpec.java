@@ -49,8 +49,8 @@ public class ListSectionSpec {
                                                 .component(ListItem.create(c)
                                                                    .color(i % 2 == 0 ? Color.WHITE : Color.LTGRAY)
                                                                    .icon(addressModel.getCoinIcon())
-                                                                   .title(addressModel.getPath())
-                                                                   .subtitle(addressModel.getAddress())
+                                                                   .title(addressModel.getAddress())
+                                                                   .subtitle(addressModel.getValue())
                                                                    .build()));
         }
         return builder.build();
