@@ -42,7 +42,7 @@ class Electrum(private val socket: StratumSocket) {
         val address: String
         val confirmed: Long
         val unconfirmed: Long
-        private val unusedAddress: Boolean
+        val unusedAddress: Boolean
 
         internal constructor(address: String, b: BalanceDto) {
             this.address = address

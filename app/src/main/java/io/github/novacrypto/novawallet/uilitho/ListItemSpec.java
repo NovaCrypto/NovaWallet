@@ -45,7 +45,8 @@ public class ListItemSpec {
             @Prop int color,
             @Prop @DrawableRes int icon,
             @Prop String title,
-            @Prop String subtitle
+            @Prop String subtitle,
+            @Prop String balance
     ) {
 
         return Column.create(c)
@@ -63,6 +64,9 @@ public class ListItemSpec {
                                 .textSizeSp(30)))
                 .child(Text.create(c)
                         .text(subtitle)
+                        .textSizeSp(14))
+                .child(Text.create(c)
+                        .text(balance)
                         .textSizeSp(14))
                 .build();
     }

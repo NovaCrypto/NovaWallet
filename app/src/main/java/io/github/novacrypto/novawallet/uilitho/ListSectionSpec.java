@@ -45,13 +45,14 @@ public class ListSectionSpec {
         for (int i = 0; i < size; i++) {
             final AddressModel addressModel = data.get(i);
             builder.child(SingleComponentSection.create(c)
-                                                .key(String.valueOf(i))
-                                                .component(ListItem.create(c)
-                                                                   .color(i % 2 == 0 ? Color.WHITE : Color.LTGRAY)
-                                                                   .icon(addressModel.getCoinIcon())
-                                                                   .title(addressModel.getAddress())
-                                                                   .subtitle(addressModel.getValue())
-                                                                   .build()));
+                    .key(String.valueOf(i))
+                    .component(ListItem.create(c)
+                            .color(i % 2 == 0 ? Color.WHITE : Color.LTGRAY)
+                            .icon(addressModel.getCoinIcon())
+                            .title(addressModel.getPath())
+                            .subtitle(addressModel.getAddress())
+                            .balance(addressModel.getValue())
+                            .build()));
         }
         return builder.build();
     }

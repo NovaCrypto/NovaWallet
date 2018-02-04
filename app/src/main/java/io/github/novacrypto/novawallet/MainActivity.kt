@@ -257,7 +257,7 @@ class MainActivity : AppCompatActivity() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
-                    updateValueOfAddress(it.address, it.toString())
+                    updateValueOfAddress(it.address, it)
                 }
     }
 
@@ -271,12 +271,22 @@ class MainActivity : AppCompatActivity() {
         lithoView.setComponent(component)
     }
 
-    private fun updateValueOfAddress(address: String, newValue: String) {
+    private fun updateValueOfAddress(address: String, newValue: Electrum.Balance) {
         val index = accounts.indexOfFirst { it.address == address }
         val toMutableList = accounts.toMutableList()
-        toMutableList[index] = accounts[index].copy(value = newValue)
+        toMutableList[index] = accounts[index].copy(value = formatBalance(newValue))
         accounts = toMutableList
         updateLithoView()
+    }
+
+    private fun formatBalance(balance: Electrum.Balance): String {
+        val div = 100000000.0
+        if (balance.unusedAddress)
+            return "unused"
+        if (balance.unconfirmed != 0L) {
+            return String.format("%.8f (%.8f)", balance.confirmed / div, balance.unconfirmed / div)
+        }
+        return String.format("%.8f", balance.confirmed / div)
     }
 
     private fun coinRes(network: Network?) =
