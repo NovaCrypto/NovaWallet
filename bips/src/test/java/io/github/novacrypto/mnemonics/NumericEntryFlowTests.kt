@@ -334,7 +334,7 @@ private fun givenPartialMnemonicInput(mnemonic: String, additional: String = "")
 private fun numberizeAndAccept(englishString: String): String {
     val root = English.INSTANCE.toNumericTree()
     return englishString.split(" ")
-            .map { it to numberize(it) }
+            .map { it to it.toKeypadDigits() }
             .joinToString(",") {
                 it.second + ('a' + root.find(it.second).top3.indexOf(it.first))
             }

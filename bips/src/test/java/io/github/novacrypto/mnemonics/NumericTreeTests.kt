@@ -103,7 +103,7 @@ class NumericTreeTests {
     private fun findAllWordsAndNoMoreThan3IdenticalSequences(wordList: WordList) {
         val root = wordList.toNumericTree()
         for (word in wordList.toIterable()) {
-            val key = numberize(word)
+            val key = word.toKeypadDigits()
             val node = root.find(key)
             node.words `should contain` word
             node.exactMatches `should contain` word

@@ -44,7 +44,7 @@ internal class NumericTree(private val depth: Int = 0) {
     }
 
     fun save(word: String) {
-        internalSave(numberize(word), word)
+        internalSave(word.toKeypadDigits(), word)
     }
 
     private fun internalSave(key: String, wholeWord: String) {
@@ -78,8 +78,8 @@ internal class NumericTree(private val depth: Int = 0) {
         private set
 }
 
-internal fun numberize(word: String): String {
-    val wordNormalized = Normalizer.normalize(word, Normalizer.Form.NFD)
+internal fun String.toKeypadDigits(): String {
+    val wordNormalized = Normalizer.normalize(this, Normalizer.Form.NFD)
     val sb = StringBuilder()
     for (c in wordNormalized.toCharArray()) {
         when (c) {
