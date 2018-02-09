@@ -20,6 +20,5 @@
   -->
 
 <resources>
-    <string name="app_name">QrScanner</string>
     <string name="title_activity_scan_qr">Scan Qr Code</string>
 </resources>
