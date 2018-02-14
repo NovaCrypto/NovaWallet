@@ -19,4 +19,25 @@
  *  You can contact the authors via github issues.
  */
 
-include ':app', ':account', ':qrscanner', ':bips', ':mnemonicentry', ':security', ':fingerprint'
+package io.github.novacrypto.fingerprint
+
+import android.os.Bundle
+import android.support.design.widget.Snackbar
+import android.support.v7.app.AppCompatActivity
+
+import kotlinx.android.synthetic.main.activity_finger_print_demo.*
+
+class FingerPrintDemoActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_finger_print_demo)
+        setSupportActionBar(toolbar)
+
+        fab.setOnClickListener { view ->
+            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show()
+        }
+    }
+
+}

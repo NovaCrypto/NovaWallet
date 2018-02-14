@@ -53,6 +53,7 @@ dependencies {
     implementation project(':qrscanner')
     implementation project(':bips')
     implementation project(':mnemonicentry')
+    implementation project(':fingerprint')
 
     implementation 'io.github.novacrypto:Base58:0.1.2@jar'
 
