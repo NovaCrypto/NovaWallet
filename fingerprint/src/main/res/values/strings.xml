@@ -20,6 +20,5 @@
   -->
 
 <resources>
-    <string name="app_name">Fingerprint</string>
-    <string name="title_activity_finger_print_demo">FingerPrintDemoActivity</string>
+    <string name="title_activity_finger_print_demo">Fingerprint Demo</string>
 </resources>
