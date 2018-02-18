@@ -32,22 +32,55 @@
         android:id="@+id/lottieAnimationView"
         android:layout_width="250dp"
         android:layout_height="250dp"
-        app:layout_constraintBottom_toTopOf="@+id/start_fingerprint"
+        app:layout_constraintBottom_toTopOf="@+id/textEncrypted"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:lottie_fileName="android_fingerprint.json" />
 
+    <EditText
+        android:id="@+id/textPlain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Type secret message"
+        app:layout_constraintBottom_toTopOf="@+id/encode"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textEncrypted" />
+
+    <EditText
+        android:id="@+id/textEncrypted"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Encrypted here"
+        app:layout_constraintBottom_toTopOf="@+id/textPlain"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lottieAnimationView" />
+
     <Button
-        android:id="@+id/start_fingerprint"
+        android:id="@+id/encode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Click me"
+        android:text="Encode text"
+        app:layout_constraintBottom_toTopOf="@+id/decode"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textPlain" />
+
+    <Button
+        android:id="@+id/decode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Decode text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/encode" />
 
 </android.support.constraint.ConstraintLayout>
