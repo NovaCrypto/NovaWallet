@@ -34,53 +34,114 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
-@RequiresApi(Build.VERSION_CODES.M)
-class FingerPrintEncryption(
-        context: Context,
-        properties: AesKeyProperties,
-        private val onAuthorizeFailure: (() -> Unit)? = null
-) {
+interface ByteArrayEncryption {
+    fun encrypt(plainData: ByteArray, onEncoded: (encodedIvAndData: ByteArray) -> Unit)
+    fun decrypt(encodedIvAndData: ByteArray, onDecoded: (data: ByteArray) -> Unit)
+}
 
-    private val key = AesKey(properties)
+interface Encryption {
+    fun encrypt(plainData: DataBlock.Plain, onEncoded: (encodedData: DataBlock.Encoded) -> Unit)
+    fun decrypt(encodedData: DataBlock.Encoded, onDecoded: (data: DataBlock.Plain) -> Unit)
+}
 
-    private var manager = FingerprintManagerCompat.from(context)
+sealed class DataBlock {
+    class Encoded(
+            val iv: ByteArray,
+            val encodedData: ByteArray
+    ) : DataBlock() {
 
-    private val DATA_VERSION = 1.toByte()
-
-    fun encode(initialData: ByteArray, onEncoded: (ByteArray) -> Unit) {
-        val cryptoObject = key
-                .toEncryptCryptoObject()
-
-        authorize(cryptoObject, initialData) { data: ByteArray, iv: ByteArray ->
-            onEncoded(byteArrayOf(DATA_VERSION, iv.size.toByte()) + iv + data)
+        fun serialize(): ByteArray {
+            return byteArrayOf(DATA_VERSION, iv.size.toByte()) + iv + encodedData
         }
     }
 
-    fun decode(encodedDataAndIv: ByteArray, onDecoded: (ByteArray) -> Unit) {
-        val dataVersion = encodedDataAndIv[0]
-        if (dataVersion != DATA_VERSION) {
-            throw Exception("Can't decode data of version $dataVersion, expecting $DATA_VERSION")
-        }
-        val ivSize = encodedDataAndIv[1]
-        val iv = encodedDataAndIv.sliceArray(2 until ivSize + 2)
-        val encodedData = encodedDataAndIv.sliceArray(ivSize + 2 until encodedDataAndIv.size)
-        val cryptoObject = key.toDecryptCryptoObject(iv)
+    class Plain(val plainData: ByteArray) : DataBlock()
 
-        authorize(cryptoObject, encodedData) { data: ByteArray, _: ByteArray ->
-            onDecoded(data)
+    companion object {
+        private const val DATA_VERSION = 1.toByte()
+
+        fun deserialize(encodedIvAndData: ByteArray): Encoded {
+            val dataVersion = encodedIvAndData[0]
+            when (dataVersion) {
+                1.toByte() -> {
+                    val ivSize = encodedIvAndData[1]
+                    val iv = encodedIvAndData.sliceArray(2 until ivSize + 2)
+                    val encodedData = encodedIvAndData.sliceArray(ivSize + 2 until encodedIvAndData.size)
+                    return Encoded(iv, encodedData)
+                }
+                else -> throw Exception("Can't decode data of version $dataVersion, expecting $DATA_VERSION")
+            }
+        }
+    }
+}
+
+fun Encryption.toByteArrayEncryption(): ByteArrayEncryption = ByteArrayEncryptionAdapter(this)
+
+private class ByteArrayEncryptionAdapter(private val adapted: Encryption) : ByteArrayEncryption {
+
+    override fun encrypt(plainData: ByteArray, onEncoded: (ByteArray) -> Unit) {
+        adapted.encrypt(DataBlock.Plain(plainData)) {
+            onEncoded(it.serialize())
+        }
+    }
+
+    override fun decrypt(encodedIvAndData: ByteArray, onDecoded: (ByteArray) -> Unit) {
+        val dataBlock = DataBlock.deserialize(encodedIvAndData)
+        adapted.decrypt(dataBlock) {
+            onDecoded(it.plainData)
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.M)
+class FingerPrintEncryption(
+        context: Context,
+        private val key: AesKey,
+        private val onAuthorizeFailure: (() -> Unit)? = null
+) : Encryption {
+
+    private var manager = FingerprintManagerCompat.from(context)
+
+    override fun encrypt(plainData: DataBlock.Plain, onEncoded: (DataBlock.Encoded) -> Unit) {
+        val cryptoObject = key
+                .toEncryptCryptoObject()
+
+        authorize(cryptoObject, plainData) { data: DataBlock ->
+            when (data) {
+                is DataBlock.Encoded -> onEncoded(data)
+                else -> throw Exception("Expected Encoded back")
+            }
+        }
+    }
+
+    override fun decrypt(encodedData: DataBlock.Encoded, onDecoded: (DataBlock.Plain) -> Unit) {
+        val cryptoObject = key.toDecryptCryptoObject(encodedData.iv)
+
+        authorize(cryptoObject, encodedData) { data: DataBlock ->
+            when (data) {
+                is DataBlock.Plain -> onDecoded(data)
+                else -> throw Exception("Expected decoded back")
+            }
         }
     }
 
     private fun authorize(
             cryptoObject: FingerprintManagerCompat.CryptoObject,
-            data: ByteArray,
-            onAuthorized: (data: ByteArray, iv: ByteArray) -> Unit
+            data: DataBlock,
+            onAuthorized: (DataBlock) -> Unit
     ) {
         manager.authenticate(cryptoObject, 0, null,
                 object : FingerprintManagerCompat.AuthenticationCallback() {
                     override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
                         super.onAuthenticationSucceeded(result)
-                        onAuthorized(cryptoObject.cipher.doFinal(data), cryptoObject.cipher.iv)
+                        when (data) {
+                            is DataBlock.Plain ->
+                                onAuthorized(DataBlock.Encoded(
+                                        cryptoObject.cipher.iv,
+                                        cryptoObject.cipher.doFinal(data.plainData)))
+                            is DataBlock.Encoded ->
+                                onAuthorized(DataBlock.Plain(cryptoObject.cipher.doFinal(data.encodedData)))
+                        }
                     }
 
                     override fun onAuthenticationFailed() {

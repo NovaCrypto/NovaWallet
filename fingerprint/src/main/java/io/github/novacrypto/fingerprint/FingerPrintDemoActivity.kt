@@ -67,8 +67,9 @@ class FingerPrintDemoActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
                 hintTouchSensor()
-                FingerPrintEncryption(this, AesKeyProperties(KEY_NAME), onAuthorizeFailure = this::playAnimBackwards)
-                        .encode(textPlain.text.toString().toByteArray(Charsets.UTF_8))
+                FingerPrintEncryption(this, AesKey(AesKeyProperties(KEY_NAME)), onAuthorizeFailure = this::playAnimBackwards)
+                        .toByteArrayEncryption()
+                        .encrypt(textPlain.text.toString().toByteArray(Charsets.UTF_8))
                         {
                             playAnimForwards()
                             val encryptedBase16 = Base16().encode(it)
@@ -90,8 +91,9 @@ class FingerPrintDemoActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
                 hintTouchSensor()
-                FingerPrintEncryption(this, AesKeyProperties(KEY_NAME), onAuthorizeFailure = this::playAnimBackwards)
-                        .decode(Base16().decode(textEncrypted.text.toString()))
+                FingerPrintEncryption(this, AesKey(AesKeyProperties(KEY_NAME)), onAuthorizeFailure = this::playAnimBackwards)
+                        .toByteArrayEncryption()
+                        .decrypt(Base16().decode(textEncrypted.text.toString()))
                         {
                             playAnimForwards()
                             textPlain.setText(String(it, Charsets.UTF_8))
