@@ -74,6 +74,7 @@ class FingerPrintDemoActivity : AppCompatActivity() {
                             val encryptedBase16 = Base16().encode(it)
                             textEncrypted.setText(encryptedBase16)
                             sharedPreferences().edit().putString("DATA", encryptedBase16).apply()
+                            textPlain.setText("")
                         }
             }
 

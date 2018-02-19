@@ -107,48 +107,55 @@ class AesKey(
         private val properties: AesKeyProperties
 ) {
     fun toEncryptCryptoObject() =
-            getSecretKey().toEncryptCypher().toCryptoObject()
+            properties.toSecretKey()
+                    .toEncryptCypher()
+                    .toCryptoObject()
 
     fun toDecryptCryptoObject(iv: ByteArray) =
-            getSecretKey().toDecryptCypher(iv).toCryptoObject()
+            properties.toSecretKey()
+                    .toDecryptCypher(iv)
+                    .toCryptoObject()
 
     private fun SecretKey.toEncryptCypher() =
-            Cipher.getInstance(properties.transform)
+            newUninitializedCipher()
                     .also {
                         it.init(Cipher.ENCRYPT_MODE, this)
                     }
 
-    private fun Cipher.toCryptoObject() = FingerprintManagerCompat.CryptoObject(this)
-
     private fun SecretKey.toDecryptCypher(iv: ByteArray) =
-            Cipher.getInstance(properties.transform)
+            newUninitializedCipher()
                     .also {
                         it.init(Cipher.DECRYPT_MODE, this, IvParameterSpec(iv))
                     }
 
-    private fun getSecretKey(): SecretKey {
-        val keyStore = KeyStore.getInstance("AndroidKeyStore")
-        keyStore.load(null)
-        val key = keyStore.getKey(properties.keyName, null) as SecretKey?
-        if (key != null) {
-            Log.d("ALAN", "Using existing key")
-        }
-        return key ?: generateKey(properties.keyName)
-    }
-
-    private fun generateKey(keyName: String) =
-            KeyGenerator.getInstance(properties.algorithm, "AndroidKeyStore").apply {
-                init(KeyGenParameterSpec.Builder(keyName,
-                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                        .setBlockModes(properties.blockMode)
-                        // Require the user to authenticate with a fingerprint to authorize every use
-                        // of the key
-                        .setUserAuthenticationRequired(true)
-
-                        //If we use this, then you can use the system auth, otherwise you must use your own
-                        //.setUserAuthenticationValidityDurationSeconds(AUTHENTICATION_DURATION_SECONDS)
-                        .setEncryptionPaddings(properties.padding)
-                        .build())
-                Log.d("ALAN", "New key")
-            }.generateKey()
+    private fun newUninitializedCipher() = Cipher.getInstance(properties.transform)
 }
+
+private fun Cipher.toCryptoObject() = FingerprintManagerCompat.CryptoObject(this)
+
+@RequiresApi(Build.VERSION_CODES.M)
+private fun AesKeyProperties.toSecretKey() =
+        loadSecretKey() ?: generateAndStoreSecretKey()
+
+private fun AesKeyProperties.loadSecretKey(): SecretKey? =
+        KeyStore.getInstance("AndroidKeyStore")
+                .apply {
+                    load(null)
+                }.getKey(keyName, null) as SecretKey?
+
+@RequiresApi(Build.VERSION_CODES.M)
+private fun AesKeyProperties.generateAndStoreSecretKey(): SecretKey =
+        KeyGenerator.getInstance(algorithm, "AndroidKeyStore").apply {
+            init(KeyGenParameterSpec.Builder(keyName,
+                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(blockMode)
+                    // Require the user to authenticate with a fingerprint to authorize every use
+                    // of the key
+                    .setUserAuthenticationRequired(true)
+
+                    //If we use this, then you can use the system auth, otherwise you must use your own
+                    //.setUserAuthenticationValidityDurationSeconds(AUTHENTICATION_DURATION_SECONDS)
+                    .setEncryptionPaddings(padding)
+                    .build())
+            Log.d("ALAN", "New key")
+        }.generateKey()
