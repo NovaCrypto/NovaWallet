@@ -34,6 +34,10 @@ import android.support.v4.hardware.fingerprint.FingerprintManagerCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
+import io.github.novacrypto.encryption.AesKey
+import io.github.novacrypto.encryption.AesKeyProperties
+import io.github.novacrypto.encryption.fingerprint.FingerPrintEncryption
+import io.github.novacrypto.encryption.toByteArrayEncryption
 import io.github.novacrypto.security.Base16
 import kotlinx.android.synthetic.main.activity_finger_print_demo.*
 import kotlinx.android.synthetic.main.content_finger_print_demo.*
