@@ -32,9 +32,7 @@ import android.security.keystore.KeyProperties
 import android.support.annotation.RequiresApi
 import android.support.v4.hardware.fingerprint.FingerprintManagerCompat
 import android.support.v7.app.AppCompatActivity
-import android.text.Editable
 import android.util.Log
-import android.widget.TextView
 import android.widget.Toast
 import io.github.novacrypto.security.Base16
 import kotlinx.android.synthetic.main.activity_finger_print_demo.*
@@ -45,6 +43,8 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
+@RequiresApi(Build.VERSION_CODES.M)
+const val TRANSFORM = "${KeyProperties.KEY_ALGORITHM_AES}/${KeyProperties.BLOCK_MODE_CBC}/${KeyProperties.ENCRYPTION_PADDING_PKCS7}"
 
 class FingerPrintDemoActivity : AppCompatActivity() {
 
@@ -65,7 +65,20 @@ class FingerPrintDemoActivity : AppCompatActivity() {
         textEncrypted.setText(sharedPreferences().getString("DATA", ""))
 
         encode.setOnClickListener({ _ ->
-            startFingerprint(fingerprintWrapper, textPlain.text.toString(), true)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                hintTouchSensor()
+                FingerPrintEncryption(this, KEY_NAME, TRANSFORM, onAuthorizeFailure = this::playAnimBackwards)
+                        .encode(textPlain.text.toString().toByteArray(Charsets.UTF_8))
+                        {
+                            playAnimForwards()
+                            val encryptedBase16 = Base16().encode(it)
+                            textEncrypted.setText(encryptedBase16)
+                            sharedPreferences().edit().putString("DATA", encryptedBase16).apply()
+                        }
+            }
+
+            //startFingerprint(fingerprintWrapper, textPlain.text.toString(), true)
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                showAuthenticationScreen(123)
 //                //textEncrypted.text = encode(textPlain.text.toString())
@@ -73,12 +86,29 @@ class FingerPrintDemoActivity : AppCompatActivity() {
         })
 
         decode.setOnClickListener({ _ ->
-            startFingerprint(fingerprintWrapper, textEncrypted.text.toString(), false)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                hintTouchSensor()
+                FingerPrintEncryption(this, KEY_NAME, TRANSFORM, onAuthorizeFailure = this::playAnimBackwards)
+                        .decode(Base16().decode(textEncrypted.text.toString()))
+                        {
+                            playAnimForwards()
+                            textPlain.setText(String(it, Charsets.UTF_8))
+                        }
+            }
+
+            // startFingerprint(fingerprintWrapper, textEncrypted.text.toString(), false)
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                showAuthenticationScreen(456)
 //                //textPlain.text = decode(textEncrypted.text.toString())
 //            }
         })
+    }
+
+    private fun playAnimBackwards() {
+        lottieAnimationView.setSpeed(-1f)
+        lottieAnimationView.playAnimation()
     }
 
     val KEY_NAME = "my_key_9"
@@ -147,14 +177,13 @@ class FingerPrintDemoActivity : AppCompatActivity() {
 
             //signature.initSign(key)
 
-            Toast.makeText(this@FingerPrintDemoActivity, "Touch sensor", Toast.LENGTH_SHORT).show()
+            hintTouchSensor()
 
             fingerprintWrapper.manager.authenticate(cryptoObject, 0, null,
                     object : FingerprintManagerCompat.AuthenticationCallback() {
                         override fun onAuthenticationSucceeded(result: FingerprintManagerCompat.AuthenticationResult?) {
                             super.onAuthenticationSucceeded(result)
-                            lottieAnimationView.setSpeed(1f)
-                            lottieAnimationView.playAnimation()
+                            playAnimForwards()
 
                             if (encode) {
                                 val encrypted = myAsymmetricEncoder.encode(message)
@@ -173,14 +202,22 @@ class FingerPrintDemoActivity : AppCompatActivity() {
 
                         override fun onAuthenticationFailed() {
                             super.onAuthenticationFailed()
-                            lottieAnimationView.setSpeed(-1f)
-                            lottieAnimationView.playAnimation()
+                            playAnimBackwards()
                             //Toast.makeText(this@FingerPrintDemoActivity, "Failed", Toast.LENGTH_SHORT).show()
                         }
                     }, null)
 
 
         }
+    }
+
+    private fun playAnimForwards() {
+        lottieAnimationView.setSpeed(1f)
+        lottieAnimationView.playAnimation()
+    }
+
+    private fun hintTouchSensor() {
+        Toast.makeText(this@FingerPrintDemoActivity, "Touch sensor", Toast.LENGTH_SHORT).show()
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
