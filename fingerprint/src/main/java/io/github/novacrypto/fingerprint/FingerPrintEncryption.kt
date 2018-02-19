@@ -37,19 +37,19 @@ import javax.crypto.spec.IvParameterSpec
 @RequiresApi(Build.VERSION_CODES.M)
 class FingerPrintEncryption(
         context: Context,
-        private val keyName: String,
-        private val transform: String,
+        properties: AesKeyProperties,
         private val onAuthorizeFailure: (() -> Unit)? = null
 ) {
+
+    private val key = AesKey(properties)
 
     private var manager = FingerprintManagerCompat.from(context)
 
     private val DATA_VERSION = 1.toByte()
 
     fun encode(initialData: ByteArray, onEncoded: (ByteArray) -> Unit) {
-        val cryptoObject = getSecretKey(keyName)
-                .toEncryptCypher()
-                .toCryptoObject()
+        val cryptoObject = key
+                .toEncryptCryptoObject()
 
         authorize(cryptoObject, initialData) { data: ByteArray, iv: ByteArray ->
             onEncoded(byteArrayOf(DATA_VERSION, iv.size.toByte()) + iv + data)
@@ -64,10 +64,7 @@ class FingerPrintEncryption(
         val ivSize = encodedDataAndIv[1]
         val iv = encodedDataAndIv.sliceArray(2 until ivSize + 2)
         val encodedData = encodedDataAndIv.sliceArray(ivSize + 2 until encodedDataAndIv.size)
-        val secretKey = getSecretKey(keyName)
-        val cryptoObject = secretKey
-                .toDecryptCypher(iv)
-                .toCryptoObject()
+        val cryptoObject = key.toDecryptCryptoObject(iv)
 
         authorize(cryptoObject, encodedData) { data: ByteArray, _: ByteArray ->
             onDecoded(data)
@@ -93,8 +90,30 @@ class FingerPrintEncryption(
                 }, null)
     }
 
+}
+
+@RequiresApi(Build.VERSION_CODES.M)
+class AesKeyProperties(
+        val keyName: String,
+        val blockMode: String = KeyProperties.BLOCK_MODE_CBC,
+        val padding: String = KeyProperties.ENCRYPTION_PADDING_PKCS7
+) {
+    val algorithm = KeyProperties.KEY_ALGORITHM_AES
+    val transform: String = "$algorithm/$blockMode/$padding"
+}
+
+@RequiresApi(Build.VERSION_CODES.M)
+class AesKey(
+        private val properties: AesKeyProperties
+) {
+    fun toEncryptCryptoObject() =
+            getSecretKey().toEncryptCypher().toCryptoObject()
+
+    fun toDecryptCryptoObject(iv: ByteArray) =
+            getSecretKey().toDecryptCypher(iv).toCryptoObject()
+
     private fun SecretKey.toEncryptCypher() =
-            Cipher.getInstance(transform)
+            Cipher.getInstance(properties.transform)
                     .also {
                         it.init(Cipher.ENCRYPT_MODE, this)
                     }
@@ -102,33 +121,33 @@ class FingerPrintEncryption(
     private fun Cipher.toCryptoObject() = FingerprintManagerCompat.CryptoObject(this)
 
     private fun SecretKey.toDecryptCypher(iv: ByteArray) =
-            Cipher.getInstance(transform)
+            Cipher.getInstance(properties.transform)
                     .also {
                         it.init(Cipher.DECRYPT_MODE, this, IvParameterSpec(iv))
                     }
 
-    private fun getSecretKey(keyName: String): SecretKey {
+    private fun getSecretKey(): SecretKey {
         val keyStore = KeyStore.getInstance("AndroidKeyStore")
         keyStore.load(null)
-        val key = keyStore.getKey(keyName, null) as SecretKey?
+        val key = keyStore.getKey(properties.keyName, null) as SecretKey?
         if (key != null) {
             Log.d("ALAN", "Using existing key")
         }
-        return key ?: generateKey(keyName)
+        return key ?: generateKey(properties.keyName)
     }
 
     private fun generateKey(keyName: String) =
-            KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore").apply {
+            KeyGenerator.getInstance(properties.algorithm, "AndroidKeyStore").apply {
                 init(KeyGenParameterSpec.Builder(keyName,
                         KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                        .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                        .setBlockModes(properties.blockMode)
                         // Require the user to authenticate with a fingerprint to authorize every use
                         // of the key
                         .setUserAuthenticationRequired(true)
 
                         //If we use this, then you can use the system auth, otherwise you must use your own
                         //.setUserAuthenticationValidityDurationSeconds(AUTHENTICATION_DURATION_SECONDS)
-                        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                        .setEncryptionPaddings(properties.padding)
                         .build())
                 Log.d("ALAN", "New key")
             }.generateKey()

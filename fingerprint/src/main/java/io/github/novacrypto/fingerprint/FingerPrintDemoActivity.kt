@@ -44,7 +44,6 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
 @RequiresApi(Build.VERSION_CODES.M)
-const val TRANSFORM = "${KeyProperties.KEY_ALGORITHM_AES}/${KeyProperties.BLOCK_MODE_CBC}/${KeyProperties.ENCRYPTION_PADDING_PKCS7}"
 
 class FingerPrintDemoActivity : AppCompatActivity() {
 
@@ -68,7 +67,7 @@ class FingerPrintDemoActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
                 hintTouchSensor()
-                FingerPrintEncryption(this, KEY_NAME, TRANSFORM, onAuthorizeFailure = this::playAnimBackwards)
+                FingerPrintEncryption(this, AesKeyProperties(KEY_NAME), onAuthorizeFailure = this::playAnimBackwards)
                         .encode(textPlain.text.toString().toByteArray(Charsets.UTF_8))
                         {
                             playAnimForwards()
@@ -90,7 +89,7 @@ class FingerPrintDemoActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
                 hintTouchSensor()
-                FingerPrintEncryption(this, KEY_NAME, TRANSFORM, onAuthorizeFailure = this::playAnimBackwards)
+                FingerPrintEncryption(this, AesKeyProperties(KEY_NAME), onAuthorizeFailure = this::playAnimBackwards)
                         .decode(Base16().decode(textEncrypted.text.toString()))
                         {
                             playAnimForwards()
