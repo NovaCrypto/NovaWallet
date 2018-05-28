@@ -35,7 +35,7 @@ dependencies {
     implementation 'io.github.novacrypto:ToRuntime:0.9.0@jar'
 
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.amshove.kluent:kluent:1.34'
+    testImplementation 'org.amshove.kluent:kluent:1.38'
 }
 
 sourceCompatibility = '1.7'
@@ -44,7 +44,7 @@ targetCompatibility = '1.7'
 /** jacoco code-cov **/
 
 jacoco {
-    toolVersion = '0.8.0'
+    toolVersion = '0.8.1'
 }
 
 jacocoTestReport {

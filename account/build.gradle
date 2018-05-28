@@ -40,7 +40,7 @@ targetCompatibility = '1.7'
 /** jacoco code-cov **/
 
 jacoco {
-    toolVersion = '0.8.0'
+    toolVersion = '0.8.1'
 }
 
 jacocoTestReport {
