@@ -55,7 +55,7 @@ android {
 dependencies {
     implementation 'com.android.support:multidex:1.0.3'
 
-    implementation project(':qrscanner')
+    implementation 'com.github.NovaCrypto:QrScanner:2018-05-28'
     implementation project(':bips')
     implementation project(':mnemonicentry')
 
