@@ -37,7 +37,7 @@ dependencies {
     implementation 'io.github.novacrypto:BIP39:0.1.9'
 
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.amshove.kluent:kluent:1.34'
+    testImplementation 'org.amshove.kluent:kluent:1.35'
 }
 
 sourceCompatibility = '1.7'
