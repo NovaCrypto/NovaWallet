@@ -38,6 +38,7 @@ android {
         versionName '1.0'
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -52,6 +53,8 @@ android {
 }
 
 dependencies {
+    implementation 'com.android.support:multidex:1.0.3'
+
     implementation project(':qrscanner')
     implementation project(':bips')
     implementation project(':mnemonicentry')
