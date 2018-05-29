@@ -21,10 +21,10 @@
 
 package io.github.novacrypto.novawallet
 
-import android.app.Application
+import android.support.multidex.MultiDexApplication
 import timber.log.Timber
 
-class WalletApplication : Application() {
+class WalletApplication : MultiDexApplication() {
 
     override fun onCreate() {
         super.onCreate()
