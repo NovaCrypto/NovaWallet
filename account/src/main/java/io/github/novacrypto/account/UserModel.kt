@@ -19,41 +19,19 @@
  *  You can contact the authors via github issues.
  */
 
-apply plugin: 'java-library'
-apply plugin: 'kotlin'
-apply plugin: 'jacoco'
+package io.github.novacrypto.account
 
-buildscript {
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+data class UserModel(
+        val accounts: List<AccountModel> = emptyList()
+)
+
+sealed class UserModelIntent {
+    class AddAccountIntent(val account: AccountModel, val index: Int? = null) : UserModelIntent()
+    class RemoveAccountIntent(val accountId: AccountId) : UserModelIntent()
+    class ForwardAccountModelIntent(
+            val accountId: AccountId,
+            val intent: AccountModelIntent
+    ) : UserModelIntent()
 }
 
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
-    api 'io.reactivex.rxjava2:rxjava:2.1.9'
-
-    testCompile 'junit:junit:4.12'
-    testImplementation 'org.amshove.kluent:kluent:1.34'
-}
-
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
-
-/** jacoco code-cov **/
-
-jacoco {
-    toolVersion = '0.8.1'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
-check.dependsOn jacocoTestReport
-
-/** end jacoco code-cov **/
+fun UserModelIntent.forward() = UserModelViewStateIntent.ForwardUserModelIntent(this)

@@ -19,41 +19,26 @@
  *  You can contact the authors via github issues.
  */
 
-apply plugin: 'java-library'
-apply plugin: 'kotlin'
-apply plugin: 'jacoco'
+package io.github.novacrypto.account
 
-buildscript {
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+sealed class AccountModelIntent {
+    class Rename(val name: String) : AccountModelIntent()
 }
 
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+fun AccountModel.toAddIntent() =
+        UserModelIntent.AddAccountIntent(this).forward()
 
-    api 'io.reactivex.rxjava2:rxjava:2.1.9'
+fun AccountModel.toInsertIntent(index: Int) =
+        UserModelIntent.AddAccountIntent(this, index).forward()
 
-    testCompile 'junit:junit:4.12'
-    testImplementation 'org.amshove.kluent:kluent:1.34'
-}
+fun AccountModel.toRemoveIntent() =
+        UserModelIntent.RemoveAccountIntent(this.id).forward()
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
+fun AccountModel.toRenameIntent(newName: String) =
+        renameAccount(newName).toUserModelIntent(this).forward()
 
-/** jacoco code-cov **/
+fun renameAccount(newName: String) =
+        AccountModelIntent.Rename(newName)
 
-jacoco {
-    toolVersion = '0.8.1'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
-check.dependsOn jacocoTestReport
-
-/** end jacoco code-cov **/
+fun AccountModelIntent.toUserModelIntent(account: AccountModel) =
+        UserModelIntent.ForwardAccountModelIntent(account.id, this)

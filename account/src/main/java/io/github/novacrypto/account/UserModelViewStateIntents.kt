@@ -19,41 +19,14 @@
  *  You can contact the authors via github issues.
  */
 
-apply plugin: 'java-library'
-apply plugin: 'kotlin'
-apply plugin: 'jacoco'
+package io.github.novacrypto.account
 
-buildscript {
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+sealed class UserModelViewStateIntent {
+    class DismissError : UserModelViewStateIntent()
+    class Undo : UserModelViewStateIntent()
+    class ForwardUserModelIntent(
+            val userModelIntent: UserModelIntent
+    ) : UserModelViewStateIntent()
 }
 
-dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-
-    api 'io.reactivex.rxjava2:rxjava:2.1.9'
-
-    testCompile 'junit:junit:4.12'
-    testImplementation 'org.amshove.kluent:kluent:1.34'
-}
-
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
-
-/** jacoco code-cov **/
-
-jacoco {
-    toolVersion = '0.8.1'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
-check.dependsOn jacocoTestReport
-
-/** end jacoco code-cov **/
+fun dismissError() = UserModelViewStateIntent.DismissError()
